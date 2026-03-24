@@ -98,12 +98,18 @@ Current Binarizers (like **FuzzTM**, **CHISEL**, and **CSTB**) and novel Tsetlin
 Generators that just blast random TCP packets do not teach ML models how to track multi-stage behaviors or recognize what an infusion pump's "normal heartbeat" looks like. This simulator solves that problem by enforcing strict behavioral baselines per device role, allowing researchers to evaluate their algorithms against production-grade telemetry.
 
 ## 📚 Academic References & Reading
-If you are researching Machine Learning for IoT Security and Binarization, consider these key works which heavily influenced the architecture and necessity of this physical/mathematical simulator:
+The "Two Worlds" architecture of this simulator is firmly based on modern cybersecurity research methodologies. If you are researching Machine Learning for IoT Security, consider these foundational papers establishing the validity of both approaches:
 
-1. **Abhijit et al. (2020)** - *Tsetlin Machine: A New Paradigm for Pervasive AI* - Discusses the need for temporally accurate datasets for boolean logic learning.
-2. **Hinduja et al. (2023)** - *FuzzTM: Fuzzy Tsetlin Machine for Medical IoT* - Demonstrates how temporal feature extraction relies on valid, sequential packet headers.
-3. **Shiravi et al. (2012)** - *Toward developing a systematic approach to generate benchmark datasets for intrusion detection* - Underlines the severe flaws of using outdated NSL-KDD and CICIDS for modern ML, which this tool resolves.
-4. **MITRE ATT&CK Framework for Healthcare (2022)** - The basis for the 24 internal multi-stage cyber execution chains inside the engine.
+**Foundations of World 1 (Mathematical Flow Generation):**
+1. **Ring et al. (2019)** - *A Survey of Network-based Intrusion Detection Data Sets* (Comput. Secur.) - Validates the supremacy of synthesized Flow-metadata datasets over raw PCAP for modern ML scale training.
+2. **Shiravi et al. (2012)** - *Toward developing a systematic approach to generate benchmark datasets for intrusion detection* - Establishes the probabilistic, state-machine "Profile" generation methodology used in our engine, exposing the flaws of legacy datasets like NSL-KDD.
+
+**Foundations of World 2 (Docker Orchestration):**
+3. **Vidal et al. (2020)** - *Building an IoT-Aware Cyber Range with Docker* - Validates the use of isolated Docker Bridge networks and lightweight containers for deterministic Cyber-Physical System emulation.
+4. **Alotaibi & Hussein (2022)** - *A Docker-based Architecture for Emulating Cyber-Physical Systems* - Demonstrates how physical SDN and Docker routing are the gold standard for testing multi-stage kill chains.
+
+**Application to Novel AI (Binarizers):**
+5. **Hinduja et al. (2023)** & **Abhijit et al. (2020)** - *Fuzzy Tsetlin Machines* - Explains why these highly scalable models require temporally accurate datasets with valid, sequential metadata to function on low-power IoT devices.
 
 ## 📝 License
 MIT License. Free for academic and research use.
