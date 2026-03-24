@@ -113,8 +113,7 @@ The "Two Worlds" architecture of this simulator is firmly based on modern cybers
 3. **Vidal et al. (2020)** - *Building an IoT-Aware Cyber Range with Docker* - Validates the use of isolated Docker Bridge networks and lightweight containers for deterministic Cyber-Physical System emulation.
 4. **Alotaibi & Hussein (2022)** - *A Docker-based Architecture for Emulating Cyber-Physical Systems* - Demonstrates how physical SDN and Docker routing are the gold standard for testing multi-stage kill chains.
 
-**Application to Novel AI (Binarizers):**
-5. **Hinduja et al. (2023)** & **Abhijit et al. (2020)** - *Fuzzy Tsetlin Machines* - Explains why these highly scalable models require temporally accurate datasets with valid, sequential metadata to function on low-power IoT devices.
+
 
 ## 📝 License
 MIT License. Free for academic and research use.
