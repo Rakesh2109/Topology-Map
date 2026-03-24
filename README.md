@@ -34,10 +34,18 @@ To bypass the GUI and instantly compile a `train.csv` and `test.csv` simulating 
 python main.py --generate-dataset --output ./output_datasets/
 ```
 
-### 3. Load Custom JSON Scenarios/Topologies
-You can feed the engine custom environments or specific attack vectors:
+### 4. Docker Orchestration (Physical Layer Emulation)
+To overcome the physical abstraction limit of standard simulators, we provide a dynamic Docker Orchestrator. This script reads your JSON Topology and synthesizes a full `docker-compose.yml` where every single hospital asset is an isolated Alpine Linux container, and every Zone is a strictly isolated Docker Bridge Network with routing enabled across the Firewall gateways.
 ```bash
-python main.py --load-devices output/examples/devices/medium_hospital.json --load-scenario output/examples/scenarios/ransomware_pacs.json
+python docker_orchestrator.py --topology output/examples/devices/medium_hospital.json
+docker-compose -f docker-compose-hospital.yml up -d
+```
+
+### 5. PCAP Synthesis (Deep Packet Inspection)
+While the core engine generates ultra-fast Flow-level ML datasets (CSV/Parquet), if your research requires Deep Packet Inspection (DPI) on raw binary payloads, you can convert the flow output directly into `.pcap` format.
+```bash
+pip install scapy
+python pcap_exporter.py --input test_dataset/train.csv --output my_malware_dataset.pcap
 ```
 
 ## 🧠 Why Build This?
