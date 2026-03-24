@@ -85,7 +85,7 @@ def generate_docker_compose(topology_path, output_path="docker-compose-hospital.
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Convert IoMT JSON Topology to robust Docker Compose architecture.")
-    parser.add_argument("--topology", default="output/examples/devices/medium_hospital.json", help="Path to topology JSON")
+    parser.add_argument("--topology", default="configs/devices/medium_hospital.json", help="Path to topology JSON")
     parser.add_argument("--output", default="docker-compose-hospital.yml", help="Path to output docker-compose file")
     args = parser.parse_args()
     

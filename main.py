@@ -292,11 +292,11 @@ Examples:
   # Generate raw time-series dataset (all 24 attacks, train/test split)
   python main.py --generate-dataset --duration 86400 --output ./dataset
 
-  # Load custom scenario from JSON
-  python main.py --load-scenario ./examples/scenarios/A14_dicom_exfiltration.json
-
   # Export built-in scenarios as JSON examples
   python main.py --export-examples
+
+  # Load a specific generated example scenario
+  python main.py --load-scenario ./configs/scenarios/A14_dicom_exfiltration.json
 
   # Single scenario (CLI)
   python main.py --scenario A14 --duration 3600 --output ./output
@@ -356,7 +356,8 @@ def main():
 
     if args.export_examples:
         from scenario_builder import export_builtin_examples
-        export_builtin_examples(os.path.join(args.output, "examples"))
+        # Export default configs globally
+        export_builtin_examples(os.path.join(os.path.dirname(os.path.abspath(__file__)), "configs"))
         return
 
     if args.generate_dataset:

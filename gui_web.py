@@ -276,7 +276,8 @@ class SimHandler(http.server.SimpleHTTPRequestHandler):
             self._json_response(dict(_dataset_state))
 
         elif path == "/api/custom-scenarios":
-            base = os.path.join(os.path.dirname(os.path.abspath(__file__)), "examples", "scenarios")
+            # We look in configs/scenarios/ instead of output/examples/scenarios/
+            base = os.path.join(os.path.dirname(os.path.abspath(__file__)), "configs", "scenarios")
             custom = os.path.join(os.path.dirname(os.path.abspath(__file__)), "custom_scenarios")
             results = list_custom_scenarios(base) + list_custom_scenarios(custom)
             self._json_response(results)
@@ -402,7 +403,7 @@ class SimHandler(http.server.SimpleHTTPRequestHandler):
 
         elif path == "/api/export-examples":
             try:
-                base = os.path.join(os.path.dirname(os.path.abspath(__file__)), "examples")
+                base = os.path.join(os.path.dirname(os.path.abspath(__file__)), "configs")
                 result = export_builtin_examples(base)
                 self._json_response({"status": "exported", **result})
             except Exception as e:

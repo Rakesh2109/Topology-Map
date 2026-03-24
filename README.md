@@ -67,7 +67,7 @@ python main.py --web --port 8080
 ### 3. Build & Run the Physical Docker Subnets (Docker Mode)
 Create a real physical testing environment using Linux containers:
 ```bash
-python docker_orchestrator.py --topology output/examples/devices/medium_hospital.json
+python scripts/docker_orchestrator.py --topology configs/devices/medium_hospital.json
 docker-compose -f docker-compose-hospital.yml up -d
 ```
 
@@ -75,7 +75,7 @@ docker-compose -f docker-compose-hospital.yml up -d
 Convert the generated Flow CSV back into real `.pcap` files for deep payload inspection:
 ```bash
 pip install scapy
-python pcap_exporter.py --input output_datasets/train.csv --output my_dataset.pcap
+python scripts/pcap_exporter.py --input output_datasets/train.csv --output my_dataset.pcap
 ```
 
 ### 4. Docker Orchestration (Physical Layer Emulation)

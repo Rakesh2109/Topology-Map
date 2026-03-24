@@ -178,10 +178,10 @@ def load_comm_map(path: str) -> list:
 # Export Built-in Examples
 # ──────────────────────────────────────────────────────────────────────
 
-def export_builtin_examples(output_dir: str = "./examples"):
+def export_builtin_examples(output_dir: str = "configs"):
     """
-    Export all 24 built-in scenarios and the medium hospital device set
-    as JSON files that users can load, modify, or use as templates.
+    Exports the predefined attack scenarios and hospital device lists
+    as JSON files so users can modify them or build their own.r use as templates.
     """
     scenarios_dir = os.path.join(output_dir, "scenarios")
     devices_dir = os.path.join(output_dir, "devices")
@@ -247,5 +247,6 @@ if __name__ == "__main__":
     # Quick test
     export_builtin_examples()
     print("\nListing exported scenarios:")
-    for s in list_custom_scenarios("./examples/scenarios"):
-        print(f"  {s['scenario_id']}: {s['label']} ({s['stages']} stages)")
+    
+    for s in list_custom_scenarios("configs/scenarios"):
+        print(f"Loaded scenario: {s['label']} ({s['stages']} stages)")
