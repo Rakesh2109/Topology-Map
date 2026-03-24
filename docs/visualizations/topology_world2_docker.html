@@ -2,114 +2,101 @@
 <html>
 <head>
     <title>IoMT Simulator - Docker Orchestration Topology (World 2)</title>
-    <!-- vis.js library -->
     <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        .header { padding: 20px 30px; background: rgba(30,30,40,0.8); backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); z-index: 10;}
-        h1 { margin: 0; font-size: 1.5rem; font-weight: 600; color: #e2e8f0; }
-        p.subtitle { margin: 5px 0 0 0; color: #94a3b8; font-size: 0.9rem; }
-        #network_canvas { flex: 1; min-height: 0; background: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%); }
+        body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        .header { padding: 20px 40px; background: rgba(15, 23, 42, 0.95); border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; z-index: 10; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.5); }
+        h1 { margin: 0; font-size: 1.6rem; font-weight: 700; color: #f1f5f9; letter-spacing: -0.5px; }
+        p.subtitle { margin: 6px 0 0 0; color: #94a3b8; font-size: 0.95rem; font-weight: 500; }
+        #network_canvas { flex: 1; min-height: 0; background-color: #0f172a; background-image: radial-gradient(#1e293b 1px, transparent 1px); background-size: 20px 20px; }
     </style>
 </head>
 <body>
     <div class="header">
         <div>
             <h1>World 2: Docker Orchestration Architecture</h1>
-            <p class="subtitle">Physical Layer-2 Mapping of Docker Bridge Networks and Alpine Containers</p>
+            <p class="subtitle">Physical Layer-2 Mapping of Isolated Docker Bridge Networks and Alpine Linux Containers</p>
         </div>
     </div>
     <div id="network_canvas"></div>
 
     <script type="text/javascript">
-        // FontAwesome icons using raw unicode
-        const ICONS = {
-            router: '\uf0e8',
-            server: '\uf233',
-            laptop: '\uf109',
-            cloud: '\uf0c2',
-            docker: '\uf395',
-            heartbeat: '\uf21e',
-            lock: '\uf023',
-            skull: '\uf714'
-        };
-
+        // Standard Vis.js node structures (No external font dependencies required)
         const nodes = new vis.DataSet([
-            // Docker Bridge Networks (Groups)
-            { id: 'bridge_A', label: 'Docker Net A\n(Internet Edge)\n10.0.0.0/24', shape: 'box', color: {background: '#3b82f6', border: '#2563eb'}, font: {color: 'white', size: 16, bold: true} },
-            { id: 'bridge_B', label: 'Docker Net B\n(Enterprise IT)\n10.0.1.0/24', shape: 'box', color: {background: '#6366f1', border: '#4f46e5'}, font: {color: 'white', size: 16, bold: true} },
-            { id: 'bridge_C', label: 'Docker Net C\n(Clinical Core)\n10.0.2.0/24', shape: 'box', color: {background: '#8b5cf6', border: '#7c3aed'}, font: {color: 'white', size: 16, bold: true} },
-            { id: 'bridge_D', label: 'Docker Net D\n(Guest WiFi)\n10.0.3.0/24', shape: 'box', color: {background: '#0ea5e9', border: '#0284c7'}, font: {color: 'white', size: 16, bold: true} },
-            { id: 'bridge_E', label: 'Docker Net E\n(IoMT Subnet)\n10.0.4.0/24', shape: 'box', color: {background: '#10b981', border: '#059669'}, font: {color: 'white', size: 16, bold: true} },
-            { id: 'bridge_F', label: 'Docker Net F\n(BMS Facility)\n10.0.5.0/24', shape: 'box', color: {background: '#f59e0b', border: '#d97706'}, font: {color: 'white', size: 16, bold: true} },
+            // Gateway/Host Layer
+            { id: 'host', label: 'Docker Daemon\n(Host OS)', shape: 'database', color: {background: '#475569', border: '#334155'}, font: {color: 'white', size: 16, bold: true}, level: 0 },
+            
+            // FW Router Container (connects to all bridges)
+            { id: 'fw', label: 'Hospital Gateway Router\n(Alpine FW Container)', shape: 'box', color: {background: '#f59e0b', border: '#d97706'}, font: {color: 'white', size: 16, bold: true}, level: 1 },
 
-            // Docker Routing Interfaces
-            { id: 'FW_A', label: 'FW_eth0', shape: 'icon', icon: {face: '"Font Awesome 5 Free"', weight: '900', code: ICONS.router, size: 40, color: '#f87171'} },
-            { id: 'FW_B', label: 'FW_eth1', shape: 'icon', icon: {face: '"Font Awesome 5 Free"', weight: '900', code: ICONS.router, size: 40, color: '#f87171'} },
-            { id: 'FW_C', label: 'FW_eth2', shape: 'icon', icon: {face: '"Font Awesome 5 Free"', weight: '900', code: ICONS.router, size: 40, color: '#f87171'} },
-            { id: 'FW_E', label: 'FW_eth4', shape: 'icon', icon: {face: '"Font Awesome 5 Free"', weight: '900', code: ICONS.router, size: 40, color: '#f87171'} },
+            // Docker Bridge Networks
+            { id: 'bridge_A', label: 'Zone A: Internet Edge\n[docker0 bridge]\n10.0.0.0/24', shape: 'box', color: {background: '#3b82f6', border: '#2563eb'}, font: {color: 'white', size: 14}, level: 2 },
+            { id: 'bridge_B', label: 'Zone B: Enterprise IT\n[docker1 bridge]\n10.0.1.0/24', shape: 'box', color: {background: '#8b5cf6', border: '#7c3aed'}, font: {color: 'white', size: 14}, level: 2 },
+            { id: 'bridge_C', label: 'Zone C: Clinical Core\n[docker2 bridge]\n10.0.2.0/24', shape: 'box', color: {background: '#0ea5e9', border: '#0284c7'}, font: {color: 'white', size: 14}, level: 2 },
+            { id: 'bridge_E', label: 'Zone E: IoMT Subnet\n[docker4 bridge]\n10.0.4.0/24', shape: 'box', color: {background: '#10b981', border: '#059669'}, font: {color: 'white', size: 14}, level: 2 },
 
-            // External Threat Actors
-            { id: 'ext_apt', label: 'Extern APT\n(Hacker)', shape: 'icon', icon: {face: '"Font Awesome 5 Free"', weight: '900', code: ICONS.skull, size: 50, color: '#ef4444'} },
+            // External Actor
+            { id: 'ext_apt', label: '💀 External APT\n(Threat Actor)', shape: 'ellipse', color: {background: '#ef4444', border: '#b91c1c'}, font: {color: 'white', size: 14, bold: true}, level: 3 },
 
-            // Example Alpine Containers
-            { id: 'web_server', label: 'WebServer\n(Alpine Container)', shape: 'icon', icon: {face: '"Font Awesome 5 Brands"', weight: '400', code: ICONS.docker, size: 40, color: '#e2e8f0'} },
-            { id: 'vpn_gw', label: 'VPN Gateway\n(Alpine Container)', shape: 'icon', icon: {face: '"Font Awesome 5 Brands"', weight: '400', code: ICONS.docker, size: 40, color: '#e2e8f0'} },
-            { id: 'hr_pc', label: 'HR Desktop\n(Alpine Container)', shape: 'icon', icon: {face: '"Font Awesome 5 Brands"', weight: '400', code: ICONS.docker, size: 40, color: '#e2e8f0'} },
-            { id: 'ad_server', label: 'Active Directory\n(Alpine Container)', shape: 'icon', icon: {face: '"Font Awesome 5 Brands"', weight: '400', code: ICONS.docker, size: 40, color: '#e2e8f0'} },
-            { id: 'pacs', label: 'PACS Server\n(Alpine)', shape: 'icon', icon: {face: '"Font Awesome 5 Brands"', weight: '400', code: ICONS.docker, size: 40, color: '#e2e8f0'} },
-            { id: 'ehr', label: 'EHR Database\n(Alpine)', shape: 'icon', icon: {face: '"Font Awesome 5 Brands"', weight: '400', code: ICONS.docker, size: 40, color: '#e2e8f0'} },
-            { id: 'patient_mon', label: 'Patient Monitor\n(Alpine)', shape: 'icon', icon: {face: '"Font Awesome 5 Brands"', weight: '400', code: ICONS.docker, size: 40, color: '#e2e8f0'} },
-            { id: 'mri', label: 'MRI Scanner\n(Alpine)', shape: 'icon', icon: {face: '"Font Awesome 5 Brands"', weight: '400', code: ICONS.docker, size: 40, color: '#e2e8f0'} }
+            // Standard Containers (Level 3)
+            { id: 'web_server', label: 'Web Server\n(Alpine)', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 12}, level: 3 },
+            { id: 'vpn_gw', label: 'VPN Gateway\n(Alpine)', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 12}, level: 3 },
+            
+            { id: 'hr_pc', label: 'HR Desktop\n(Alpine)', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 12}, level: 3 },
+            { id: 'ad_server', label: 'Active Directory\n(Alpine)', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 12}, level: 3 },
+
+            { id: 'pacs', label: 'PACS Imaging\n(Alpine)', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 12}, level: 3 },
+            { id: 'ehr', label: 'EHR Base\n(Alpine)', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 12}, level: 3 },
+
+            { id: 'patient_mon', label: 'Patient Monitor\n(Alpine)', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 12}, level: 3 },
+            { id: 'infusion', label: 'Infusion Pump\n(Alpine)', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 12}, level: 3 }
         ]);
 
         const edges = new vis.DataSet([
-            // Routing Map
-            { from: 'FW_A', to: 'FW_B', label: 'Docker Route', color: '#ffcc00', dashes: true },
-            { from: 'FW_B', to: 'FW_C', label: 'Docker Route', color: '#ffcc00', dashes: true },
-            { from: 'FW_C', to: 'FW_E', label: 'Docker Route', color: '#ffcc00', dashes: true },
+            // Host creates Firewall
+            { from: 'host', to: 'fw', color: '#94a3b8', width: 2, label: 'runs' },
 
-            // FW links to Bridges
-            { from: 'FW_A', to: 'bridge_A', color: 'rgba(255,255,255,0.2)' },
-            { from: 'FW_B', to: 'bridge_B', color: 'rgba(255,255,255,0.2)' },
-            { from: 'FW_C', to: 'bridge_C', color: 'rgba(255,255,255,0.2)' },
-            { from: 'FW_E', to: 'bridge_E', color: 'rgba(255,255,255,0.2)' },
+            // FW routing interfaces to all bridges
+            { from: 'fw', to: 'bridge_A', color: '#fcd34d', width: 2, dashes: true, label: 'eth0' },
+            { from: 'fw', to: 'bridge_B', color: '#fcd34d', width: 2, dashes: true, label: 'eth1' },
+            { from: 'fw', to: 'bridge_C', color: '#fcd34d', width: 2, dashes: true, label: 'eth2' },
+            { from: 'fw', to: 'bridge_E', color: '#fcd34d', width: 2, dashes: true, label: 'eth4' },
 
-            // Container to Bridge Links
-            { from: 'ext_apt', to: 'bridge_A', color: 'rgba(255,255,255,0.5)', width: 2 },
-            { from: 'web_server', to: 'bridge_A', color: 'rgba(255,255,255,0.5)', width: 2 },
-            { from: 'vpn_gw', to: 'bridge_A', color: 'rgba(255,255,255,0.5)', width: 2 },
-            
-            { from: 'hr_pc', to: 'bridge_B', color: 'rgba(255,255,255,0.5)', width: 2 },
-            { from: 'ad_server', to: 'bridge_B', color: 'rgba(255,255,255,0.5)', width: 2 },
+            // Bridge A (Internet Edge)
+            { from: 'bridge_A', to: 'ext_apt', color: '#cbd5e1', width: 2, label: 'veth' },
+            { from: 'bridge_A', to: 'web_server', color: '#cbd5e1', width: 2, label: 'veth' },
+            { from: 'bridge_A', to: 'vpn_gw', color: '#cbd5e1', width: 2, label: 'veth' },
 
-            { from: 'pacs', to: 'bridge_C', color: 'rgba(255,255,255,0.5)', width: 2 },
-            { from: 'ehr', to: 'bridge_C', color: 'rgba(255,255,255,0.5)', width: 2 },
+            // Bridge B (Enterprise IT)
+            { from: 'bridge_B', to: 'hr_pc', color: '#cbd5e1', width: 2, label: 'veth' },
+            { from: 'bridge_B', to: 'ad_server', color: '#cbd5e1', width: 2, label: 'veth' },
 
-            { from: 'patient_mon', to: 'bridge_E', color: 'rgba(255,255,255,0.5)', width: 2 },
-            { from: 'mri', to: 'bridge_E', color: 'rgba(255,255,255,0.5)', width: 2 }
+            // Bridge C (Clinical Core)
+            { from: 'bridge_C', to: 'pacs', color: '#cbd5e1', width: 2, label: 'veth' },
+            { from: 'bridge_C', to: 'ehr', color: '#cbd5e1', width: 2, label: 'veth' },
+
+            // Bridge E (IoMT)
+            { from: 'bridge_E', to: 'patient_mon', color: '#cbd5e1', width: 2, label: 'veth' },
+            { from: 'bridge_E', to: 'infusion', color: '#cbd5e1', width: 2, label: 'veth' }
         ]);
 
-        // Load font awesome dynamically
-        const faLink = document.createElement('link');
-        faLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css';
-        faLink.rel = 'stylesheet';
-        document.head.appendChild(faLink);
-
-        // Render after font loads
-        setTimeout(() => {
-            const container = document.getElementById('network_canvas');
-            const data = { nodes: nodes, edges: edges };
-            const options = {
-                physics: {
-                    barnesHut: { gravitationalConstant: -3000, centralGravity: 0.3, springLength: 150 },
-                    solver: 'barnesHut'
-                },
-                layout: { hierarchical: { enabled: true, direction: 'UD', sortMethod: 'directed', levelSeparation: 150, nodeSpacing: 200 } }
-            };
-            new vis.Network(container, data, options);
-        }, 500);
+        const container = document.getElementById('network_canvas');
+        const data = { nodes: nodes, edges: edges };
+        const options = {
+            layout: { 
+                hierarchical: { 
+                    enabled: true, 
+                    direction: 'UD', 
+                    sortMethod: 'directed', 
+                    levelSeparation: 150, 
+                    nodeSpacing: 250 
+                } 
+            },
+            physics: { enabled: false },
+            edges: { smooth: { type: 'cubicBezier', forceDirection: 'vertical', roundness: 0.4 } }
+        };
+        new vis.Network(container, data, options);
     </script>
 </body>
 </html>
