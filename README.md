@@ -92,10 +92,6 @@ pip install scapy
 python pcap_exporter.py --input test_dataset/train.csv --output my_malware_dataset.pcap
 ```
 
-## 🧠 Why Build This?
-Current Binarizers (like **FuzzTM**, **CHISEL**, and **CSTB**) and novel Tsetlin Machine frameworks require immense, temporally accurate data to train effectively for low-power Microcontroller (MCU) deployment. 
-
-Generators that just blast random TCP packets do not teach ML models how to track multi-stage behaviors or recognize what an infusion pump's "normal heartbeat" looks like. This simulator solves that problem by enforcing strict behavioral baselines per device role, allowing researchers to evaluate their algorithms against production-grade telemetry.
 
 ## Architecture & Topology 
 
