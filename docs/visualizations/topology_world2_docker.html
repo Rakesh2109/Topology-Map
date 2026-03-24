@@ -16,82 +16,126 @@
     <div class="header">
         <div>
             <h1>World 2: Docker Orchestration Architecture</h1>
-            <p class="subtitle">Physical Layer-2 Mapping of Isolated Docker Bridge Networks and Alpine Linux Containers</p>
+            <p class="subtitle">Physical Layer-2 Mapping of Isolated Docker Bridge Networks and all 38 Alpine Linux Containers</p>
         </div>
     </div>
     <div id="network_canvas"></div>
 
     <script type="text/javascript">
-        // Standard Vis.js node structures (No external font dependencies required)
         const nodes = new vis.DataSet([
-            // Gateway/Host Layer
             { id: 'host', label: 'Docker Daemon\n(Host OS)', shape: 'database', color: {background: '#475569', border: '#334155'}, font: {color: 'white', size: 16, bold: true}, level: 0 },
-            
-            // FW Router Container (connects to all bridges)
             { id: 'fw', label: 'Hospital Gateway Router\n(Alpine FW Container)', shape: 'box', color: {background: '#f59e0b', border: '#d97706'}, font: {color: 'white', size: 16, bold: true}, level: 1 },
-
-            // Docker Bridge Networks
-            { id: 'bridge_A', label: 'Zone A: Internet Edge\n[docker0 bridge]\n10.0.0.0/24', shape: 'box', color: {background: '#3b82f6', border: '#2563eb'}, font: {color: 'white', size: 14}, level: 2 },
-            { id: 'bridge_B', label: 'Zone B: Enterprise IT\n[docker1 bridge]\n10.0.1.0/24', shape: 'box', color: {background: '#8b5cf6', border: '#7c3aed'}, font: {color: 'white', size: 14}, level: 2 },
-            { id: 'bridge_C', label: 'Zone C: Clinical Core\n[docker2 bridge]\n10.0.2.0/24', shape: 'box', color: {background: '#0ea5e9', border: '#0284c7'}, font: {color: 'white', size: 14}, level: 2 },
-            { id: 'bridge_E', label: 'Zone E: IoMT Subnet\n[docker4 bridge]\n10.0.4.0/24', shape: 'box', color: {background: '#10b981', border: '#059669'}, font: {color: 'white', size: 14}, level: 2 },
-
-            // External Actor
-            { id: 'ext_apt', label: '💀 External APT\n(Threat Actor)', shape: 'ellipse', color: {background: '#ef4444', border: '#b91c1c'}, font: {color: 'white', size: 14, bold: true}, level: 3 },
-
-            // Standard Containers (Level 3)
-            { id: 'web_server', label: 'Web Server\n(Alpine)', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 12}, level: 3 },
-            { id: 'vpn_gw', label: 'VPN Gateway\n(Alpine)', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 12}, level: 3 },
             
-            { id: 'hr_pc', label: 'HR Desktop\n(Alpine)', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 12}, level: 3 },
-            { id: 'ad_server', label: 'Active Directory\n(Alpine)', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 12}, level: 3 },
+            { id: 'zone_a', label: 'Zone A: Edge\n[docker0]\n10.0.0.0/24', shape: 'box', color: {background: '#3b82f6', border: '#2563eb'}, font: {color: 'white', size: 14}, level: 2 },
+            { id: 'zone_b', label: 'Zone B: IT\n[docker1]\n10.0.1.0/24', shape: 'box', color: {background: '#8b5cf6', border: '#7c3aed'}, font: {color: 'white', size: 14}, level: 2 },
+            { id: 'zone_c', label: 'Zone C: Core\n[docker2]\n10.0.2.0/24', shape: 'box', color: {background: '#0ea5e9', border: '#0284c7'}, font: {color: 'white', size: 14}, level: 2 },
+            { id: 'zone_d', label: 'Zone D: Radiology\n[docker3]\n10.0.3.0/24', shape: 'box', color: {background: '#ec4899', border: '#db2777'}, font: {color: 'white', size: 14}, level: 2 },
+            { id: 'zone_e', label: 'Zone E: IoMT\n[docker4]\n10.0.4.0/24', shape: 'box', color: {background: '#10b981', border: '#059669'}, font: {color: 'white', size: 14}, level: 2 },
+            { id: 'zone_f', label: 'Zone F: Vendor\n[docker5]\n10.0.5.0/24', shape: 'box', color: {background: '#eab308', border: '#ca8a04'}, font: {color: 'white', size: 14}, level: 2 },
 
-            { id: 'pacs', label: 'PACS Imaging\n(Alpine)', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 12}, level: 3 },
-            { id: 'ehr', label: 'EHR Base\n(Alpine)', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 12}, level: 3 },
+            { id: 'ext_apt', label: '💀 External APT\n(Threat Actor)', shape: 'ellipse', color: {background: '#ef4444', border: '#b91c1c'}, font: {color: 'white', size: 14, bold: true}, level: 3 },
+            { id: 'gw-edge-01', label: 'gw-edge-01\n(gateway)\n203.0.113.1', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'fw-perimeter-01', label: 'fw-perimeter-01\n(firewall)\n203.0.113.2', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'web-portal-01', label: 'web-portal-01\n(web_portal)\n203.0.113.10', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'ad-server-01', label: 'ad-server-01\n(ad_server)\n10.1.1.10', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'dns-server-01', label: 'dns-server-01\n(dns_server)\n10.1.1.11', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'dhcp-server-01', label: 'dhcp-server-01\n(dhcp_server)\n10.1.1.12', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'ehr-frontend-01', label: 'ehr-frontend-01\n(ehr_frontend)\n10.1.2.10', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'file-share-01', label: 'file-share-01\n(file_share)\n10.1.3.10', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'backup-server-01', label: 'backup-server-01\n(backup_server)\n10.1.3.20', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'soc-collector-01', label: 'soc-collector-01\n(soc_collector)\n10.1.4.10', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'pacs-server-01', label: 'pacs-server-01\n(pacs_server)\n10.2.1.10', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'vna-01', label: 'vna-01\n(vna)\n10.2.1.20', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'ris-01', label: 'ris-01\n(ris)\n10.2.1.30', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'lis-01', label: 'lis-01\n(lis)\n10.2.1.40', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'fhir-server-01', label: 'fhir-server-01\n(fhir_server)\n10.2.2.10', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'hl7-engine-01', label: 'hl7-engine-01\n(hl7_engine)\n10.2.2.20', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'nurse-station-01', label: 'nurse-station-01\n(nurse_station)\n10.2.3.10', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'nurse-station-02', label: 'nurse-station-02\n(nurse_station)\n10.2.3.11', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'device-mgmt-01', label: 'device-mgmt-01\n(device_mgmt_server)\n10.2.4.10', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'ct-scanner-01', label: 'ct-scanner-01\n(ct_scanner)\n10.3.1.10', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'mri-scanner-01', label: 'mri-scanner-01\n(mri_scanner)\n10.3.1.20', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'ultrasound-01', label: 'ultrasound-01\n(ultrasound)\n10.3.1.30', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'rad-ws-01', label: 'rad-ws-01\n(rad_workstation)\n10.3.2.10', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'rad-ws-02', label: 'rad-ws-02\n(rad_workstation)\n10.3.2.11', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'dicom-viewer-01', label: 'dicom-viewer-01\n(dicom_viewer)\n10.3.3.10', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'img-archive-gw-01', label: 'img-archive-gw-01\n(imaging_archive_gw)\n10.3.3.20', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'patient-mon-01', label: 'patient-mon-01\n(patient_monitor)\n10.4.1.10', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'patient-mon-02', label: 'patient-mon-02\n(patient_monitor)\n10.4.1.11', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'patient-mon-03', label: 'patient-mon-03\n(patient_monitor)\n10.4.1.12', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'infusion-pump-01', label: 'infusion-pump-01\n(infusion_pump)\n10.4.2.10', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'infusion-pump-02', label: 'infusion-pump-02\n(infusion_pump)\n10.4.2.11', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'ventilator-01', label: 'ventilator-01\n(ventilator)\n10.4.3.10', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'ventilator-02', label: 'ventilator-02\n(ventilator)\n10.4.3.11', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'mobile-med-app-01', label: 'mobile-med-app-01\n(mobile_medical_app)\n10.4.4.10', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'ble-gw-01', label: 'ble-gw-01\n(ble_gateway)\n10.4.5.10', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'wifi-gw-01', label: 'wifi-gw-01\n(wifi_gateway)\n10.4.5.20', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'telemetry-agg-01', label: 'telemetry-agg-01\n(telemetry_aggregator)\n10.4.6.10', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'wearable-01', label: 'wearable-01\n(wearable)\n10.4.7.10', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'wearable-02', label: 'wearable-02\n(wearable)\n10.4.7.11', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'vendor-vpn-01', label: 'vendor-vpn-01\n(vendor_vpn)\n10.5.0.10', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
+            { id: 'vendor-jumphost-01', label: 'vendor-jumphost-01\n(vendor_jumphost)\n10.5.0.20', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 10}, level: 3 },
 
-            { id: 'patient_mon', label: 'Patient Monitor\n(Alpine)', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 12}, level: 3 },
-            { id: 'infusion', label: 'Infusion Pump\n(Alpine)', shape: 'ellipse', color: {background: '#e2e8f0', border: '#94a3b8'}, font: {color: '#0f172a', size: 12}, level: 3 }
         ]);
 
         const edges = new vis.DataSet([
-            // Host creates Firewall
             { from: 'host', to: 'fw', color: '#94a3b8', width: 2, label: 'runs' },
+            { from: 'fw', to: 'zone_a', color: '#fcd34d', width: 2, dashes: true, label: 'eth0' },
+            { from: 'fw', to: 'zone_b', color: '#fcd34d', width: 2, dashes: true, label: 'eth1' },
+            { from: 'fw', to: 'zone_c', color: '#fcd34d', width: 2, dashes: true, label: 'eth2' },
+            { from: 'fw', to: 'zone_d', color: '#fcd34d', width: 2, dashes: true, label: 'eth3' },
+            { from: 'fw', to: 'zone_e', color: '#fcd34d', width: 2, dashes: true, label: 'eth4' },
+            { from: 'fw', to: 'zone_f', color: '#fcd34d', width: 2, dashes: true, label: 'eth5' },
+            { from: 'zone_a', to: 'ext_apt', color: '#cbd5e1', width: 2, label: 'veth' },
+            { from: 'zone_a', to: 'gw-edge-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_a', to: 'fw-perimeter-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_a', to: 'web-portal-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_b', to: 'ad-server-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_b', to: 'dns-server-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_b', to: 'dhcp-server-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_b', to: 'ehr-frontend-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_b', to: 'file-share-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_b', to: 'backup-server-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_b', to: 'soc-collector-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_c', to: 'pacs-server-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_c', to: 'vna-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_c', to: 'ris-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_c', to: 'lis-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_c', to: 'fhir-server-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_c', to: 'hl7-engine-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_c', to: 'nurse-station-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_c', to: 'nurse-station-02', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_c', to: 'device-mgmt-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_d', to: 'ct-scanner-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_d', to: 'mri-scanner-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_d', to: 'ultrasound-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_d', to: 'rad-ws-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_d', to: 'rad-ws-02', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_d', to: 'dicom-viewer-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_d', to: 'img-archive-gw-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_e', to: 'patient-mon-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_e', to: 'patient-mon-02', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_e', to: 'patient-mon-03', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_e', to: 'infusion-pump-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_e', to: 'infusion-pump-02', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_e', to: 'ventilator-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_e', to: 'ventilator-02', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_e', to: 'mobile-med-app-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_e', to: 'ble-gw-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_e', to: 'wifi-gw-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_e', to: 'telemetry-agg-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_e', to: 'wearable-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_e', to: 'wearable-02', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_f', to: 'vendor-vpn-01', color: '#cbd5e1', width: 1, label: 'veth' },
+            { from: 'zone_f', to: 'vendor-jumphost-01', color: '#cbd5e1', width: 1, label: 'veth' },
 
-            // FW routing interfaces to all bridges
-            { from: 'fw', to: 'bridge_A', color: '#fcd34d', width: 2, dashes: true, label: 'eth0' },
-            { from: 'fw', to: 'bridge_B', color: '#fcd34d', width: 2, dashes: true, label: 'eth1' },
-            { from: 'fw', to: 'bridge_C', color: '#fcd34d', width: 2, dashes: true, label: 'eth2' },
-            { from: 'fw', to: 'bridge_E', color: '#fcd34d', width: 2, dashes: true, label: 'eth4' },
-
-            // Bridge A (Internet Edge)
-            { from: 'bridge_A', to: 'ext_apt', color: '#cbd5e1', width: 2, label: 'veth' },
-            { from: 'bridge_A', to: 'web_server', color: '#cbd5e1', width: 2, label: 'veth' },
-            { from: 'bridge_A', to: 'vpn_gw', color: '#cbd5e1', width: 2, label: 'veth' },
-
-            // Bridge B (Enterprise IT)
-            { from: 'bridge_B', to: 'hr_pc', color: '#cbd5e1', width: 2, label: 'veth' },
-            { from: 'bridge_B', to: 'ad_server', color: '#cbd5e1', width: 2, label: 'veth' },
-
-            // Bridge C (Clinical Core)
-            { from: 'bridge_C', to: 'pacs', color: '#cbd5e1', width: 2, label: 'veth' },
-            { from: 'bridge_C', to: 'ehr', color: '#cbd5e1', width: 2, label: 'veth' },
-
-            // Bridge E (IoMT)
-            { from: 'bridge_E', to: 'patient_mon', color: '#cbd5e1', width: 2, label: 'veth' },
-            { from: 'bridge_E', to: 'infusion', color: '#cbd5e1', width: 2, label: 'veth' }
         ]);
 
         const container = document.getElementById('network_canvas');
         const data = { nodes: nodes, edges: edges };
         const options = {
             layout: { 
-                hierarchical: { 
-                    enabled: true, 
-                    direction: 'UD', 
-                    sortMethod: 'directed', 
-                    levelSeparation: 150, 
-                    nodeSpacing: 250 
-                } 
+                hierarchical: { enabled: true, direction: 'UD', sortMethod: 'directed', levelSeparation: 200, nodeSpacing: 100 } 
             },
             physics: { enabled: false },
             edges: { smooth: { type: 'cubicBezier', forceDirection: 'vertical', roundness: 0.4 } }

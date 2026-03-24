@@ -97,6 +97,15 @@ Current Binarizers (like **FuzzTM**, **CHISEL**, and **CSTB**) and novel Tsetlin
 
 Generators that just blast random TCP packets do not teach ML models how to track multi-stage behaviors or recognize what an infusion pump's "normal heartbeat" looks like. This simulator solves that problem by enforcing strict behavioral baselines per device role, allowing researchers to evaluate their algorithms against production-grade telemetry.
 
+## Architecture & Topology 
+
+IoMT Simulator operates a **"Two Worlds"** paradigm to bridge the gap between Big Data mathematics for ML generation, and physical OS emulation for real-world academic research. 
+
+*   **World 1 (Mathematical Flow Engine)**: Capable of tracking 10,000+ assets with microsecond temporal accuracy directly into `.csv` formats, leveraging the Tsetlin Machine and FuzzTM mathematical paradigms.
+*   **World 2 (Docker Orchestration)**: A complete physical Layer-2 translation. It converts the abstract configuration into an identical containerized testbed array (matching the presentation formats seen in prominent references like the **UNB CIC IoT Dataset 2023**), wiring 38 separate Alpine Linux containers to explicitly segregated Docker Bridge Subnet routing tables.
+
+### Topology Diagram Visualizations
+Both modes feature their own fully interactive HTML Visualizers (`docs/visualizations/`) offering perfect, academic-grade structural mapping of the routing paths.
 ## 📚 Academic References & Reading
 The "Two Worlds" architecture of this simulator is firmly based on modern cybersecurity research methodologies. If you are researching Machine Learning for IoT Security, consider these foundational papers establishing the validity of both approaches:
 
