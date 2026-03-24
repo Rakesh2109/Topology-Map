@@ -1,0 +1,31 @@
+{
+  "scenario_id": "A11",
+  "label": "ble_replay",
+  "attack_path": "Near-device attacker",
+  "primary_target": "Wearable / BLE medical device",
+  "target_roles": [
+    "wearable",
+    "ble_gateway",
+    "patient_monitor"
+  ],
+  "affected_protocols": [
+    "BLE"
+  ],
+  "entry_point": "iomt_subnet",
+  "target_asset": "wearable_01",
+  "default_intensity": 0.5,
+  "default_stealth": true,
+  "stages": [
+    {
+      "name": "ble_sniff",
+      "duration_frac": 0.4,
+      "description": "BLE packet capture"
+    },
+    {
+      "name": "ble_replay",
+      "duration_frac": 0.6,
+      "description": "Duplicate message timings, repeated sequence behavior"
+    }
+  ],
+  "signature_description": "Duplicate message timings, repeated sequence behavior, telemetry integrity anomaly"
+}

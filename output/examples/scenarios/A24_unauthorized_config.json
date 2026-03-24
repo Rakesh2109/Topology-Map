@@ -1,0 +1,38 @@
+{
+  "scenario_id": "A24",
+  "label": "unauthorized_config",
+  "attack_path": "Compromised service tool",
+  "primary_target": "IoMT management server",
+  "target_roles": [
+    "device_mgmt_server",
+    "patient_monitor",
+    "infusion_pump"
+  ],
+  "affected_protocols": [
+    "HTTPS",
+    "SSH",
+    "SNMP"
+  ],
+  "entry_point": "clinical_subnet",
+  "target_asset": "device_mgmt_01",
+  "default_intensity": 0.6,
+  "default_stealth": true,
+  "stages": [
+    {
+      "name": "access_mgmt",
+      "duration_frac": 0.2,
+      "description": "Access management plane"
+    },
+    {
+      "name": "config_write",
+      "duration_frac": 0.5,
+      "description": "Bursts of write/config operations"
+    },
+    {
+      "name": "behavior_drift",
+      "duration_frac": 0.3,
+      "description": "Device behavior drift after config change"
+    }
+  ],
+  "signature_description": "Bursts of write/config operations, small request payloads, subsequent device behavior drift"
+}

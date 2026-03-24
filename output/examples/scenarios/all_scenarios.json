@@ -1,0 +1,807 @@
+{
+  "A01": {
+    "scenario_id": "A01",
+    "label": "external_recon",
+    "attack_path": "Internet",
+    "primary_target": "Gateway, PACS web, FHIR, VPN",
+    "target_roles": [
+      "gateway",
+      "web_portal",
+      "fhir_server",
+      "vendor_vpn"
+    ],
+    "affected_protocols": [
+      "HTTPS",
+      "TCP"
+    ],
+    "entry_point": "internet",
+    "target_asset": "pacs_server_01",
+    "default_intensity": 0.5,
+    "default_stealth": false,
+    "stages": [
+      {
+        "name": "port_scan",
+        "duration_frac": 0.6,
+        "description": "Short flows to many hosts/ports"
+      },
+      {
+        "name": "service_probe",
+        "duration_frac": 0.4,
+        "description": "Service identification probes"
+      }
+    ],
+    "signature_description": "Short flows to many hosts/ports, high unique_dst_ip and unique_dst_port, low bytes/flow"
+  },
+  "A02": {
+    "scenario_id": "A02",
+    "label": "service_enumeration",
+    "attack_path": "Internet",
+    "primary_target": "PACS, Synapse, web portals",
+    "target_roles": [
+      "pacs_server",
+      "web_portal"
+    ],
+    "affected_protocols": [
+      "HTTPS",
+      "HTTP"
+    ],
+    "entry_point": "internet",
+    "target_asset": "web_portal_01",
+    "default_intensity": 0.6,
+    "default_stealth": false,
+    "stages": [
+      {
+        "name": "path_discovery",
+        "duration_frac": 0.5,
+        "description": "HTTP requests across admin paths"
+      },
+      {
+        "name": "service_fingerprint",
+        "duration_frac": 0.5,
+        "description": "Moderate request bursts to identified services"
+      }
+    ],
+    "signature_description": "Repeated HTTP(S) hits across admin paths, moderate request bursts, small responses"
+  },
+  "A03": {
+    "scenario_id": "A03",
+    "label": "password_spraying",
+    "attack_path": "Internet",
+    "primary_target": "Remote access gateway",
+    "target_roles": [
+      "gateway",
+      "vendor_vpn"
+    ],
+    "affected_protocols": [
+      "HTTPS",
+      "VPN"
+    ],
+    "entry_point": "internet",
+    "target_asset": "gw_edge_01",
+    "default_intensity": 0.4,
+    "default_stealth": true,
+    "stages": [
+      {
+        "name": "spray_attempt",
+        "duration_frac": 0.8,
+        "description": "Low-rate repeated login attempts across usernames"
+      },
+      {
+        "name": "cooldown",
+        "duration_frac": 0.2,
+        "description": "Brief pause before next round"
+      }
+    ],
+    "signature_description": "Low-rate repeated login attempts across many usernames, failures dominate, source IP reuse"
+  },
+  "A04": {
+    "scenario_id": "A04",
+    "label": "brute_force_pacs",
+    "attack_path": "Internet",
+    "primary_target": "Imaging portal",
+    "target_roles": [
+      "pacs_server",
+      "web_portal"
+    ],
+    "affected_protocols": [
+      "HTTPS",
+      "DICOM"
+    ],
+    "entry_point": "internet",
+    "target_asset": "pacs_server_01",
+    "default_intensity": 0.8,
+    "default_stealth": false,
+    "stages": [
+      {
+        "name": "bruteforce",
+        "duration_frac": 0.9,
+        "description": "High rate repeated auth failures"
+      },
+      {
+        "name": "success_check",
+        "duration_frac": 0.1,
+        "description": "Check for successful login"
+      }
+    ],
+    "signature_description": "Higher request rate, repeated auth failures, one or two usernames targeted"
+  },
+  "A05": {
+    "scenario_id": "A05",
+    "label": "vendor_support_abuse",
+    "attack_path": "Compromised vendor path",
+    "primary_target": "Vendor jump host -> clinical zone",
+    "target_roles": [
+      "vendor_jumphost",
+      "nurse_station",
+      "device_mgmt_server"
+    ],
+    "affected_protocols": [
+      "SSH",
+      "RDP",
+      "HTTPS"
+    ],
+    "entry_point": "vendor_vpn",
+    "target_asset": "vendor_jumphost_01",
+    "default_intensity": 0.6,
+    "default_stealth": true,
+    "stages": [
+      {
+        "name": "vendor_access",
+        "duration_frac": 0.3,
+        "description": "New remote-admin session from vendor IP"
+      },
+      {
+        "name": "internal_pivot",
+        "duration_frac": 0.5,
+        "description": "Pivot from jump host into clinical zone"
+      },
+      {
+        "name": "data_access",
+        "duration_frac": 0.2,
+        "description": "Access clinical systems"
+      }
+    ],
+    "signature_description": "New remote-admin sessions, off-hours access, unusual vendor IP, sudden internal pivot"
+  },
+  "A06": {
+    "scenario_id": "A06",
+    "label": "default_cred_monitor",
+    "attack_path": "Internal / physical foothold",
+    "primary_target": "Patient monitor / bedside device",
+    "target_roles": [
+      "patient_monitor"
+    ],
+    "affected_protocols": [
+      "TCP",
+      "HTTPS"
+    ],
+    "entry_point": "iomt_subnet",
+    "target_asset": "patient_mon_01",
+    "default_intensity": 0.5,
+    "default_stealth": true,
+    "stages": [
+      {
+        "name": "login_attempt",
+        "duration_frac": 0.2,
+        "description": "Minimal login attempts with default credentials"
+      },
+      {
+        "name": "admin_session",
+        "duration_frac": 0.5,
+        "description": "Successful admin session established"
+      },
+      {
+        "name": "device_query",
+        "duration_frac": 0.3,
+        "description": "Device management queries follow"
+      }
+    ],
+    "signature_description": "Immediate successful admin session after minimal attempts; device management queries follow"
+  },
+  "A07": {
+    "scenario_id": "A07",
+    "label": "hardcoded_cred_abuse",
+    "attack_path": "Internal / mobile foothold",
+    "primary_target": "Ventilator, mobile logic app, service interface",
+    "target_roles": [
+      "ventilator",
+      "mobile_medical_app"
+    ],
+    "affected_protocols": [
+      "TCP",
+      "SSH",
+      "HTTPS"
+    ],
+    "entry_point": "iomt_subnet",
+    "target_asset": "ventilator_01",
+    "default_intensity": 0.5,
+    "default_stealth": true,
+    "stages": [
+      {
+        "name": "priv_access",
+        "duration_frac": 0.3,
+        "description": "Privileged access without normal auth pattern"
+      },
+      {
+        "name": "config_rw",
+        "duration_frac": 0.7,
+        "description": "Config reads/writes follow"
+      }
+    ],
+    "signature_description": "Successful privileged access without normal auth pattern, config reads/writes follow"
+  },
+  "A08": {
+    "scenario_id": "A08",
+    "label": "auth_bypass_imaging",
+    "attack_path": "Internet or internal",
+    "primary_target": "Synapse/medical imaging app",
+    "target_roles": [
+      "pacs_server",
+      "dicom_viewer"
+    ],
+    "affected_protocols": [
+      "HTTPS",
+      "DICOM"
+    ],
+    "entry_point": "internet",
+    "target_asset": "pacs_server_01",
+    "default_intensity": 0.6,
+    "default_stealth": false,
+    "stages": [
+      {
+        "name": "bypass_exploit",
+        "duration_frac": 0.4,
+        "description": "Privileged resource access without prior login"
+      },
+      {
+        "name": "role_escalation",
+        "duration_frac": 0.3,
+        "description": "Abnormal role escalation"
+      },
+      {
+        "name": "data_access",
+        "duration_frac": 0.3,
+        "description": "Access restricted imaging data"
+      }
+    ],
+    "signature_description": "Privileged resource access without prior login sequence, abnormal role escalation"
+  },
+  "A09": {
+    "scenario_id": "A09",
+    "label": "replay_token_attack",
+    "attack_path": "Internal / compromised endpoint",
+    "primary_target": "Clinical application",
+    "target_roles": [
+      "ehr_frontend",
+      "fhir_server"
+    ],
+    "affected_protocols": [
+      "HTTPS"
+    ],
+    "entry_point": "clinical_subnet",
+    "target_asset": "ehr_frontend_01",
+    "default_intensity": 0.5,
+    "default_stealth": true,
+    "stages": [
+      {
+        "name": "token_capture",
+        "duration_frac": 0.3,
+        "description": "Capture auth token/session identifier"
+      },
+      {
+        "name": "token_replay",
+        "duration_frac": 0.7,
+        "description": "Reused token from different client context"
+      }
+    ],
+    "signature_description": "Reused auth token/session identifier, repeated access from shifted client context"
+  },
+  "A10": {
+    "scenario_id": "A10",
+    "label": "cleartext_cred_capture",
+    "attack_path": "Internal same subnet",
+    "primary_target": "Web portal / mobile app",
+    "target_roles": [
+      "web_portal",
+      "mobile_medical_app"
+    ],
+    "affected_protocols": [
+      "HTTP",
+      "TCP"
+    ],
+    "entry_point": "internal_subnet",
+    "target_asset": "web_portal_01",
+    "default_intensity": 0.5,
+    "default_stealth": true,
+    "stages": [
+      {
+        "name": "sniff",
+        "duration_frac": 0.4,
+        "description": "Cleartext auth exchange captured"
+      },
+      {
+        "name": "reuse",
+        "duration_frac": 0.6,
+        "description": "Successful reuse from another source"
+      }
+    ],
+    "signature_description": "First cleartext auth exchange, then successful reuse from another source; low crypto indicators"
+  },
+  "A11": {
+    "scenario_id": "A11",
+    "label": "ble_replay",
+    "attack_path": "Near-device attacker",
+    "primary_target": "Wearable / BLE medical device",
+    "target_roles": [
+      "wearable",
+      "ble_gateway",
+      "patient_monitor"
+    ],
+    "affected_protocols": [
+      "BLE"
+    ],
+    "entry_point": "iomt_subnet",
+    "target_asset": "wearable_01",
+    "default_intensity": 0.5,
+    "default_stealth": true,
+    "stages": [
+      {
+        "name": "ble_sniff",
+        "duration_frac": 0.4,
+        "description": "BLE packet capture"
+      },
+      {
+        "name": "ble_replay",
+        "duration_frac": 0.6,
+        "description": "Duplicate message timings, repeated sequence behavior"
+      }
+    ],
+    "signature_description": "Duplicate message timings, repeated sequence behavior, telemetry integrity anomaly"
+  },
+  "A12": {
+    "scenario_id": "A12",
+    "label": "firmware_tampering",
+    "attack_path": "Internal privileged access",
+    "primary_target": "IoMT device fleet",
+    "target_roles": [
+      "device_mgmt_server",
+      "patient_monitor",
+      "infusion_pump",
+      "ventilator"
+    ],
+    "affected_protocols": [
+      "HTTPS",
+      "TCP",
+      "SSH"
+    ],
+    "entry_point": "clinical_subnet",
+    "target_asset": "device_mgmt_01",
+    "default_intensity": 0.7,
+    "default_stealth": false,
+    "stages": [
+      {
+        "name": "update_push",
+        "duration_frac": 0.5,
+        "description": "Large management transfers to devices"
+      },
+      {
+        "name": "device_reboot",
+        "duration_frac": 0.3,
+        "description": "Device reboot and reconnect wave"
+      },
+      {
+        "name": "verify",
+        "duration_frac": 0.2,
+        "description": "Verify firmware applied"
+      }
+    ],
+    "signature_description": "Large management transfers, update endpoint traffic, device reboot silence or reconnect wave"
+  },
+  "A13": {
+    "scenario_id": "A13",
+    "label": "dicom_discovery",
+    "attack_path": "Compromised workstation",
+    "primary_target": "PACS / archive",
+    "target_roles": [
+      "pacs_server",
+      "imaging_archive_gw"
+    ],
+    "affected_protocols": [
+      "DICOM"
+    ],
+    "entry_point": "imaging_subnet",
+    "target_asset": "pacs_server_01",
+    "default_intensity": 0.6,
+    "default_stealth": true,
+    "stages": [
+      {
+        "name": "cfind_queries",
+        "duration_frac": 0.6,
+        "description": "Spike in DICOM C-FIND queries"
+      },
+      {
+        "name": "data_fetch",
+        "duration_frac": 0.4,
+        "description": "Low initial bytes then larger fetches"
+      }
+    ],
+    "signature_description": "Spike in DICOM query/retrieve, many C-FIND-like queries, low initial bytes then larger fetches"
+  },
+  "A14": {
+    "scenario_id": "A14",
+    "label": "dicom_exfiltration",
+    "attack_path": "Compromised radiology host",
+    "primary_target": "PACS / viewer / archive",
+    "target_roles": [
+      "pacs_server",
+      "dicom_viewer",
+      "imaging_archive_gw"
+    ],
+    "affected_protocols": [
+      "DICOM",
+      "HTTPS"
+    ],
+    "entry_point": "imaging_subnet",
+    "target_asset": "pacs_server_01",
+    "default_intensity": 0.7,
+    "default_stealth": false,
+    "stages": [
+      {
+        "name": "study_enum",
+        "duration_frac": 0.2,
+        "description": "Enumerate available studies"
+      },
+      {
+        "name": "bulk_transfer",
+        "duration_frac": 0.6,
+        "description": "Sustained large DICOM transfers"
+      },
+      {
+        "name": "exfil_external",
+        "duration_frac": 0.2,
+        "description": "Outbound bytes surge to unusual peer"
+      }
+    ],
+    "signature_description": "Sustained large DICOM bytes to unusual peer, many study moves, outbound bytes surge"
+  },
+  "A15": {
+    "scenario_id": "A15",
+    "label": "fhir_bulk_pull",
+    "attack_path": "Compromised app token",
+    "primary_target": "FHIR server / cloud API",
+    "target_roles": [
+      "fhir_server"
+    ],
+    "affected_protocols": [
+      "HTTPS",
+      "FHIR"
+    ],
+    "entry_point": "internet",
+    "target_asset": "fhir_server_01",
+    "default_intensity": 0.6,
+    "default_stealth": true,
+    "stages": [
+      {
+        "name": "api_enum",
+        "duration_frac": 0.2,
+        "description": "Enumerate API endpoints"
+      },
+      {
+        "name": "bulk_read",
+        "duration_frac": 0.8,
+        "description": "High GET rate, anomalous volume and pagination"
+      }
+    ],
+    "signature_description": "High GET rate, high object count, mostly read-only but anomalous volume and pagination"
+  },
+  "A16": {
+    "scenario_id": "A16",
+    "label": "hl7_flood",
+    "attack_path": "Compromised clinical app",
+    "primary_target": "HL7 engine / LIS / EHR adapter",
+    "target_roles": [
+      "hl7_engine",
+      "lis",
+      "ehr_frontend"
+    ],
+    "affected_protocols": [
+      "HL7",
+      "TCP"
+    ],
+    "entry_point": "clinical_subnet",
+    "target_asset": "hl7_engine_01",
+    "default_intensity": 0.8,
+    "default_stealth": false,
+    "stages": [
+      {
+        "name": "msg_burst",
+        "duration_frac": 0.7,
+        "description": "Abnormal HL7 message count bursts"
+      },
+      {
+        "name": "error_gen",
+        "duration_frac": 0.3,
+        "description": "Parser errors and retries from non-standard sender"
+      }
+    ],
+    "signature_description": "Abnormal HL7 message count, bursts from non-standard sender, retries and parser errors"
+  },
+  "A17": {
+    "scenario_id": "A17",
+    "label": "lateral_movement",
+    "attack_path": "Compromised IT endpoint",
+    "primary_target": "Enterprise -> PACS / nurse station / IoMT",
+    "target_roles": [
+      "pacs_server",
+      "nurse_station",
+      "patient_monitor"
+    ],
+    "affected_protocols": [
+      "SMB",
+      "RDP",
+      "HTTPS"
+    ],
+    "entry_point": "enterprise_it",
+    "target_asset": "nurse_station_01",
+    "default_intensity": 0.6,
+    "default_stealth": true,
+    "stages": [
+      {
+        "name": "path_probe",
+        "duration_frac": 0.3,
+        "description": "Rare path activation, scan clinical assets"
+      },
+      {
+        "name": "smb_rdp_connect",
+        "duration_frac": 0.5,
+        "description": "SMB/RDP/HTTPS to clinical assets"
+      },
+      {
+        "name": "establish_presence",
+        "duration_frac": 0.2,
+        "description": "Establish persistent access"
+      }
+    ],
+    "signature_description": "Rare path activation, sudden SMB/RDP/HTTPS to clinical assets, unique_dst_ip rises"
+  },
+  "A18": {
+    "scenario_id": "A18",
+    "label": "ransomware_staging",
+    "attack_path": "Compromised workstation",
+    "primary_target": "File shares, AD, backup, EHR support systems",
+    "target_roles": [
+      "file_share",
+      "ad_server",
+      "backup_server",
+      "ehr_frontend"
+    ],
+    "affected_protocols": [
+      "SMB",
+      "RDP",
+      "HTTPS"
+    ],
+    "entry_point": "enterprise_it",
+    "target_asset": "file_share_01",
+    "default_intensity": 0.8,
+    "default_stealth": false,
+    "stages": [
+      {
+        "name": "smb_enum",
+        "duration_frac": 0.3,
+        "description": "SMB session spike, file-share enumeration"
+      },
+      {
+        "name": "admin_share",
+        "duration_frac": 0.3,
+        "description": "Admin share access, RDP spread"
+      },
+      {
+        "name": "staging",
+        "duration_frac": 0.4,
+        "description": "Ransomware payload staging"
+      }
+    ],
+    "signature_description": "SMB session spike, admin share access, RDP spread, file-share enumeration"
+  },
+  "A19": {
+    "scenario_id": "A19",
+    "label": "backup_deletion",
+    "attack_path": "Compromised admin host",
+    "primary_target": "Backup server",
+    "target_roles": [
+      "backup_server"
+    ],
+    "affected_protocols": [
+      "SMB",
+      "HTTPS"
+    ],
+    "entry_point": "enterprise_it",
+    "target_asset": "backup_server_01",
+    "default_intensity": 0.7,
+    "default_stealth": true,
+    "stages": [
+      {
+        "name": "backup_discover",
+        "duration_frac": 0.3,
+        "description": "Backup share flows appear"
+      },
+      {
+        "name": "backup_delete",
+        "duration_frac": 0.5,
+        "description": "Admin/API deletion calls"
+      },
+      {
+        "name": "verify_delete",
+        "duration_frac": 0.2,
+        "description": "Drop in routine backup traffic"
+      }
+    ],
+    "signature_description": "Backup share flows appear, admin/API deletion calls, drop in routine backup traffic"
+  },
+  "A20": {
+    "scenario_id": "A20",
+    "label": "phi_exfiltration",
+    "attack_path": "Compromised server",
+    "primary_target": "Database / file share / cloud sink",
+    "target_roles": [
+      "file_share",
+      "ehr_frontend"
+    ],
+    "affected_protocols": [
+      "HTTPS",
+      "SMB"
+    ],
+    "entry_point": "enterprise_it",
+    "target_asset": "file_share_01",
+    "default_intensity": 0.7,
+    "default_stealth": false,
+    "stages": [
+      {
+        "name": "data_collect",
+        "duration_frac": 0.3,
+        "description": "Identify and stage high-value data"
+      },
+      {
+        "name": "compress",
+        "duration_frac": 0.2,
+        "description": "Compression-like byte pattern"
+      },
+      {
+        "name": "exfiltrate",
+        "duration_frac": 0.5,
+        "description": "Large outbound transfer to external destination"
+      }
+    ],
+    "signature_description": "Large outbound transfer to unusual external destination, sustained compression-like byte pattern"
+  },
+  "A21": {
+    "scenario_id": "A21",
+    "label": "pacs_dos",
+    "attack_path": "External or internal",
+    "primary_target": "PACS / imaging server",
+    "target_roles": [
+      "pacs_server"
+    ],
+    "affected_protocols": [
+      "DICOM",
+      "HTTPS"
+    ],
+    "entry_point": "internet",
+    "target_asset": "pacs_server_01",
+    "default_intensity": 0.9,
+    "default_stealth": false,
+    "stages": [
+      {
+        "name": "flood",
+        "duration_frac": 0.8,
+        "description": "Many requests / large payloads causing resource exhaustion"
+      },
+      {
+        "name": "sustained",
+        "duration_frac": 0.2,
+        "description": "Retransmissions rise, service latency spikes"
+      }
+    ],
+    "signature_description": "Many requests/large payloads causing resource exhaustion, retransmissions rise, latency spikes"
+  },
+  "A22": {
+    "scenario_id": "A22",
+    "label": "app_layer_flood",
+    "attack_path": "Internet bot / single source",
+    "primary_target": "Clinical web application",
+    "target_roles": [
+      "web_portal",
+      "ehr_frontend"
+    ],
+    "affected_protocols": [
+      "HTTPS",
+      "HTTP"
+    ],
+    "entry_point": "internet",
+    "target_asset": "web_portal_01",
+    "default_intensity": 0.9,
+    "default_stealth": false,
+    "stages": [
+      {
+        "name": "http_flood",
+        "duration_frac": 0.7,
+        "description": "High request rate, session churn"
+      },
+      {
+        "name": "error_storm",
+        "duration_frac": 0.3,
+        "description": "Many 4xx/5xx responses, CPU/latency spikes"
+      }
+    ],
+    "signature_description": "High request rate, session churn, many 4xx/5xx responses, CPU/latency proxies"
+  },
+  "A23": {
+    "scenario_id": "A23",
+    "label": "telemetry_spoofing",
+    "attack_path": "Internal MITM or device compromise",
+    "primary_target": "Telemetry aggregator / monitor",
+    "target_roles": [
+      "telemetry_aggregator",
+      "patient_monitor"
+    ],
+    "affected_protocols": [
+      "TCP",
+      "BLE"
+    ],
+    "entry_point": "iomt_subnet",
+    "target_asset": "telemetry_agg_01",
+    "default_intensity": 0.6,
+    "default_stealth": true,
+    "stages": [
+      {
+        "name": "intercept",
+        "duration_frac": 0.3,
+        "description": "Intercept telemetry stream"
+      },
+      {
+        "name": "inject_values",
+        "duration_frac": 0.7,
+        "description": "Implausible value jumps, inconsistent sender identity"
+      }
+    ],
+    "signature_description": "Normal packet rate but implausible value jumps, inconsistent sender identity, repeat values"
+  },
+  "A24": {
+    "scenario_id": "A24",
+    "label": "unauthorized_config",
+    "attack_path": "Compromised service tool",
+    "primary_target": "IoMT management server",
+    "target_roles": [
+      "device_mgmt_server",
+      "patient_monitor",
+      "infusion_pump"
+    ],
+    "affected_protocols": [
+      "HTTPS",
+      "SSH",
+      "SNMP"
+    ],
+    "entry_point": "clinical_subnet",
+    "target_asset": "device_mgmt_01",
+    "default_intensity": 0.6,
+    "default_stealth": true,
+    "stages": [
+      {
+        "name": "access_mgmt",
+        "duration_frac": 0.2,
+        "description": "Access management plane"
+      },
+      {
+        "name": "config_write",
+        "duration_frac": 0.5,
+        "description": "Bursts of write/config operations"
+      },
+      {
+        "name": "behavior_drift",
+        "duration_frac": 0.3,
+        "description": "Device behavior drift after config change"
+      }
+    ],
+    "signature_description": "Bursts of write/config operations, small request payloads, subsequent device behavior drift"
+  }
+}

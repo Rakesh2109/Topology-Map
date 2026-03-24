@@ -1,0 +1,30 @@
+{
+  "scenario_id": "A21",
+  "label": "pacs_dos",
+  "attack_path": "External or internal",
+  "primary_target": "PACS / imaging server",
+  "target_roles": [
+    "pacs_server"
+  ],
+  "affected_protocols": [
+    "DICOM",
+    "HTTPS"
+  ],
+  "entry_point": "internet",
+  "target_asset": "pacs_server_01",
+  "default_intensity": 0.9,
+  "default_stealth": false,
+  "stages": [
+    {
+      "name": "flood",
+      "duration_frac": 0.8,
+      "description": "Many requests / large payloads causing resource exhaustion"
+    },
+    {
+      "name": "sustained",
+      "duration_frac": 0.2,
+      "description": "Retransmissions rise, service latency spikes"
+    }
+  ],
+  "signature_description": "Many requests/large payloads causing resource exhaustion, retransmissions rise, latency spikes"
+}

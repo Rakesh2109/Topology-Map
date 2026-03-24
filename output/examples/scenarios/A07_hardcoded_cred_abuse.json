@@ -1,0 +1,32 @@
+{
+  "scenario_id": "A07",
+  "label": "hardcoded_cred_abuse",
+  "attack_path": "Internal / mobile foothold",
+  "primary_target": "Ventilator, mobile logic app, service interface",
+  "target_roles": [
+    "ventilator",
+    "mobile_medical_app"
+  ],
+  "affected_protocols": [
+    "TCP",
+    "SSH",
+    "HTTPS"
+  ],
+  "entry_point": "iomt_subnet",
+  "target_asset": "ventilator_01",
+  "default_intensity": 0.5,
+  "default_stealth": true,
+  "stages": [
+    {
+      "name": "priv_access",
+      "duration_frac": 0.3,
+      "description": "Privileged access without normal auth pattern"
+    },
+    {
+      "name": "config_rw",
+      "duration_frac": 0.7,
+      "description": "Config reads/writes follow"
+    }
+  ],
+  "signature_description": "Successful privileged access without normal auth pattern, config reads/writes follow"
+}

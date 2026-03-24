@@ -1,0 +1,30 @@
+{
+  "scenario_id": "A09",
+  "label": "replay_token_attack",
+  "attack_path": "Internal / compromised endpoint",
+  "primary_target": "Clinical application",
+  "target_roles": [
+    "ehr_frontend",
+    "fhir_server"
+  ],
+  "affected_protocols": [
+    "HTTPS"
+  ],
+  "entry_point": "clinical_subnet",
+  "target_asset": "ehr_frontend_01",
+  "default_intensity": 0.5,
+  "default_stealth": true,
+  "stages": [
+    {
+      "name": "token_capture",
+      "duration_frac": 0.3,
+      "description": "Capture auth token/session identifier"
+    },
+    {
+      "name": "token_replay",
+      "duration_frac": 0.7,
+      "description": "Reused token from different client context"
+    }
+  ],
+  "signature_description": "Reused auth token/session identifier, repeated access from shifted client context"
+}

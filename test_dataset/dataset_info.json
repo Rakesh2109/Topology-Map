@@ -1,0 +1,431 @@
+{
+  "total_flows": 528964,
+  "train_flows": 416062,
+  "test_flows": 112902,
+  "train_ratio": 0.7866,
+  "test_ratio": 0.2134,
+  "train_attack_types": [
+    "app_layer_flood",
+    "auth_bypass_imaging",
+    "backup_deletion",
+    "ble_replay",
+    "brute_force_pacs",
+    "cleartext_cred_capture",
+    "default_cred_monitor",
+    "dicom_discovery",
+    "dicom_exfiltration",
+    "external_recon",
+    "fhir_bulk_pull",
+    "firmware_tampering",
+    "hardcoded_cred_abuse",
+    "hl7_flood",
+    "lateral_movement",
+    "pacs_dos",
+    "password_spraying",
+    "phi_exfiltration",
+    "ransomware_staging",
+    "replay_token_attack",
+    "service_enumeration",
+    "telemetry_spoofing",
+    "unauthorized_config",
+    "vendor_support_abuse"
+  ],
+  "test_attack_types": [
+    "app_layer_flood",
+    "auth_bypass_imaging",
+    "backup_deletion",
+    "ble_replay",
+    "brute_force_pacs",
+    "cleartext_cred_capture",
+    "default_cred_monitor",
+    "dicom_discovery",
+    "dicom_exfiltration",
+    "external_recon",
+    "fhir_bulk_pull",
+    "firmware_tampering",
+    "hardcoded_cred_abuse",
+    "hl7_flood",
+    "lateral_movement",
+    "pacs_dos",
+    "password_spraying",
+    "phi_exfiltration",
+    "ransomware_staging",
+    "replay_token_attack",
+    "service_enumeration",
+    "telemetry_spoofing",
+    "unauthorized_config",
+    "vendor_support_abuse"
+  ],
+  "all_attack_types_in_train": 24,
+  "all_attack_types_in_test": 24,
+  "coverage_complete": true,
+  "train_label_counts": {
+    "benign": 386196,
+    "cleartext_cred_capture": 314,
+    "vendor_support_abuse": 298,
+    "dicom_exfiltration": 998,
+    "telemetry_spoofing": 929,
+    "pacs_dos": 4116,
+    "phi_exfiltration": 606,
+    "service_enumeration": 1122,
+    "app_layer_flood": 4725,
+    "auth_bypass_imaging": 558,
+    "hl7_flood": 2608,
+    "brute_force_pacs": 2982,
+    "replay_token_attack": 472,
+    "ble_replay": 659,
+    "lateral_movement": 299,
+    "firmware_tampering": 547,
+    "ransomware_staging": 1142,
+    "backup_deletion": 489,
+    "password_spraying": 109,
+    "hardcoded_cred_abuse": 393,
+    "external_recon": 2913,
+    "dicom_discovery": 1164,
+    "unauthorized_config": 574,
+    "default_cred_monitor": 237,
+    "fhir_bulk_pull": 1612
+  },
+  "test_label_counts": {
+    "benign": 83773,
+    "ble_replay": 786,
+    "ransomware_staging": 1166,
+    "cleartext_cred_capture": 379,
+    "firmware_tampering": 411,
+    "hl7_flood": 1949,
+    "external_recon": 2461,
+    "vendor_support_abuse": 293,
+    "password_spraying": 95,
+    "phi_exfiltration": 584,
+    "fhir_bulk_pull": 1471,
+    "default_cred_monitor": 226,
+    "dicom_exfiltration": 1002,
+    "auth_bypass_imaging": 645,
+    "lateral_movement": 264,
+    "brute_force_pacs": 3180,
+    "dicom_discovery": 1270,
+    "replay_token_attack": 530,
+    "service_enumeration": 1325,
+    "app_layer_flood": 4708,
+    "hardcoded_cred_abuse": 331,
+    "unauthorized_config": 649,
+    "telemetry_spoofing": 930,
+    "backup_deletion": 424,
+    "pacs_dos": 4050
+  },
+  "attack_slots": [
+    {
+      "scenario_id": "A10",
+      "attack_start": 2592,
+      "attack_end": 2772,
+      "region": "train"
+    },
+    {
+      "scenario_id": "A05",
+      "attack_start": 5364,
+      "attack_end": 5544,
+      "region": "train"
+    },
+    {
+      "scenario_id": "A14",
+      "attack_start": 8136,
+      "attack_end": 8316,
+      "region": "train"
+    },
+    {
+      "scenario_id": "A23",
+      "attack_start": 10908,
+      "attack_end": 11088,
+      "region": "train"
+    },
+    {
+      "scenario_id": "A21",
+      "attack_start": 13680,
+      "attack_end": 13860,
+      "region": "train"
+    },
+    {
+      "scenario_id": "A20",
+      "attack_start": 16452,
+      "attack_end": 16632,
+      "region": "train"
+    },
+    {
+      "scenario_id": "A02",
+      "attack_start": 19224,
+      "attack_end": 19404,
+      "region": "train"
+    },
+    {
+      "scenario_id": "A22",
+      "attack_start": 21996,
+      "attack_end": 22176,
+      "region": "train"
+    },
+    {
+      "scenario_id": "A08",
+      "attack_start": 24768,
+      "attack_end": 24948,
+      "region": "train"
+    },
+    {
+      "scenario_id": "A16",
+      "attack_start": 27540,
+      "attack_end": 27720,
+      "region": "train"
+    },
+    {
+      "scenario_id": "A04",
+      "attack_start": 30312,
+      "attack_end": 30492,
+      "region": "train"
+    },
+    {
+      "scenario_id": "A09",
+      "attack_start": 33084,
+      "attack_end": 33264,
+      "region": "train"
+    },
+    {
+      "scenario_id": "A11",
+      "attack_start": 35856,
+      "attack_end": 36036,
+      "region": "train"
+    },
+    {
+      "scenario_id": "A17",
+      "attack_start": 38628,
+      "attack_end": 38808,
+      "region": "train"
+    },
+    {
+      "scenario_id": "A12",
+      "attack_start": 41400,
+      "attack_end": 41580,
+      "region": "train"
+    },
+    {
+      "scenario_id": "A18",
+      "attack_start": 44172,
+      "attack_end": 44352,
+      "region": "train"
+    },
+    {
+      "scenario_id": "A19",
+      "attack_start": 46944,
+      "attack_end": 47124,
+      "region": "train"
+    },
+    {
+      "scenario_id": "A03",
+      "attack_start": 49716,
+      "attack_end": 49896,
+      "region": "train"
+    },
+    {
+      "scenario_id": "A07",
+      "attack_start": 52488,
+      "attack_end": 52668,
+      "region": "train"
+    },
+    {
+      "scenario_id": "A01",
+      "attack_start": 55260,
+      "attack_end": 55440,
+      "region": "train"
+    },
+    {
+      "scenario_id": "A13",
+      "attack_start": 58032,
+      "attack_end": 58212,
+      "region": "train"
+    },
+    {
+      "scenario_id": "A24",
+      "attack_start": 60804,
+      "attack_end": 60984,
+      "region": "train"
+    },
+    {
+      "scenario_id": "A06",
+      "attack_start": 63576,
+      "attack_end": 63756,
+      "region": "train"
+    },
+    {
+      "scenario_id": "A15",
+      "attack_start": 66348,
+      "attack_end": 66528,
+      "region": "train"
+    },
+    {
+      "scenario_id": "A11",
+      "attack_start": 69638,
+      "attack_end": 69818,
+      "region": "test"
+    },
+    {
+      "scenario_id": "A18",
+      "attack_start": 70336,
+      "attack_end": 70516,
+      "region": "test"
+    },
+    {
+      "scenario_id": "A10",
+      "attack_start": 71034,
+      "attack_end": 71214,
+      "region": "test"
+    },
+    {
+      "scenario_id": "A12",
+      "attack_start": 71732,
+      "attack_end": 71912,
+      "region": "test"
+    },
+    {
+      "scenario_id": "A16",
+      "attack_start": 72430,
+      "attack_end": 72610,
+      "region": "test"
+    },
+    {
+      "scenario_id": "A01",
+      "attack_start": 73128,
+      "attack_end": 73308,
+      "region": "test"
+    },
+    {
+      "scenario_id": "A05",
+      "attack_start": 73826,
+      "attack_end": 74006,
+      "region": "test"
+    },
+    {
+      "scenario_id": "A03",
+      "attack_start": 74524,
+      "attack_end": 74704,
+      "region": "test"
+    },
+    {
+      "scenario_id": "A20",
+      "attack_start": 75222,
+      "attack_end": 75402,
+      "region": "test"
+    },
+    {
+      "scenario_id": "A15",
+      "attack_start": 75920,
+      "attack_end": 76100,
+      "region": "test"
+    },
+    {
+      "scenario_id": "A06",
+      "attack_start": 76618,
+      "attack_end": 76798,
+      "region": "test"
+    },
+    {
+      "scenario_id": "A14",
+      "attack_start": 77316,
+      "attack_end": 77496,
+      "region": "test"
+    },
+    {
+      "scenario_id": "A08",
+      "attack_start": 78014,
+      "attack_end": 78194,
+      "region": "test"
+    },
+    {
+      "scenario_id": "A17",
+      "attack_start": 78712,
+      "attack_end": 78892,
+      "region": "test"
+    },
+    {
+      "scenario_id": "A04",
+      "attack_start": 79410,
+      "attack_end": 79590,
+      "region": "test"
+    },
+    {
+      "scenario_id": "A13",
+      "attack_start": 80108,
+      "attack_end": 80288,
+      "region": "test"
+    },
+    {
+      "scenario_id": "A09",
+      "attack_start": 80806,
+      "attack_end": 80986,
+      "region": "test"
+    },
+    {
+      "scenario_id": "A02",
+      "attack_start": 81504,
+      "attack_end": 81684,
+      "region": "test"
+    },
+    {
+      "scenario_id": "A22",
+      "attack_start": 82202,
+      "attack_end": 82382,
+      "region": "test"
+    },
+    {
+      "scenario_id": "A07",
+      "attack_start": 82900,
+      "attack_end": 83080,
+      "region": "test"
+    },
+    {
+      "scenario_id": "A24",
+      "attack_start": 83598,
+      "attack_end": 83778,
+      "region": "test"
+    },
+    {
+      "scenario_id": "A23",
+      "attack_start": 84296,
+      "attack_end": 84476,
+      "region": "test"
+    },
+    {
+      "scenario_id": "A19",
+      "attack_start": 84994,
+      "attack_end": 85174,
+      "region": "test"
+    },
+    {
+      "scenario_id": "A21",
+      "attack_start": 85692,
+      "attack_end": 85872,
+      "region": "test"
+    }
+  ],
+  "columns": [
+    "ts_start",
+    "ts_end",
+    "duration",
+    "src_ip",
+    "dst_ip",
+    "src_port",
+    "dst_port",
+    "proto",
+    "bytes_in",
+    "bytes_out",
+    "packets_in",
+    "packets_out",
+    "tcp_flags",
+    "zone_src",
+    "zone_dst",
+    "device_role_src",
+    "device_role_dst",
+    "label",
+    "attack_type",
+    "scenario_id"
+  ],
+  "total_duration_s": 86400,
+  "seed": 42,
+  "elapsed_s": 9.8
+}

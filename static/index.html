@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IoMT Medical NIDS Simulator</title>
+<meta name="description" content="Healthcare Network Intrusion Detection Dataset Generator">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg-dark: #0a0a1a;
+  --bg-panel: #12122a;
+  --bg-card: #1a1a3a;
+  --bg-input: #22224a;
+  --bg-hover: #2a2a5a;
+  --text: #e8e8f8;
+  --text-dim: #8888aa;
+  --text-muted: #555570;
+  --accent: #6c5ce7;
+  --accent-light: #a29bfe;
+  --accent-glow: rgba(108,92,231,0.3);
+  --cyan: #00cec9;
+  --cyan-glow: rgba(0,206,201,0.3);
+  --green: #00b894;
+  --green-glow: rgba(0,184,148,0.25);
+  --red: #ff6b6b;
+  --red-glow: rgba(255,107,107,0.25);
+  --orange: #fdcb6e;
+  --orange-glow: rgba(253,203,110,0.25);
+  --pink: #fd79a8;
+  --border: rgba(255,255,255,0.06);
+  --glass: rgba(18,18,42,0.85);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-dark);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Animated background */
+body::before {
+  content: '';
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(108,92,231,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(0,206,201,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 60% 80%, rgba(253,203,110,0.04) 0%, transparent 50%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ── Tabs ───────────────────────────────────────────── */
+.tabs {
+  display: flex; gap: 4px; padding: 0 24px;
+  background: var(--glass);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 65px; z-index: 99;
+  backdrop-filter: blur(20px);
+}
+.tab-btn {
+  background: transparent; border: none; color: var(--text-dim);
+  padding: 12px 20px; font-family: 'Inter', sans-serif;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  border-bottom: 2px solid transparent; transition: all 0.2s;
+}
+.tab-btn:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+.tab-btn.active { color: var(--accent-light); border-bottom-color: var(--accent); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+
+/* ── Header ─────────────────────────────────────────── */
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 24px;
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 100;
+}
+.header-left { display: flex; align-items: center; gap: 16px; }
+.logo {
+  font-size: 20px; font-weight: 800;
+  background: linear-gradient(135deg, var(--accent-light), var(--cyan));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  letter-spacing: -0.5px;
+}
+.logo-icon { font-size: 24px; margin-right: 4px; filter: drop-shadow(0 0 8px var(--cyan-glow)); }
+.header-subtitle { font-size: 12px; color: var(--text-dim); font-weight: 400; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.status-badge {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 20px;
+  font-size: 12px; font-weight: 600;
+  background: rgba(0,184,148,0.15); color: var(--green); border: 1px solid rgba(0,184,148,0.3);
+}
+.status-badge.running { background: rgba(108,92,231,0.15); color: var(--accent-light); border-color: rgba(108,92,231,0.3); }
+.status-badge.attack { background: rgba(255,107,107,0.15); color: var(--red); border-color: rgba(255,107,107,0.3); }
+.status-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: currentColor;
+  animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ── Main Layout ────────────────────────────────────── */
+.main { min-height: calc(100vh - 110px); }
+.panel-grid { display: grid; grid-template-columns: 320px 1fr; gap: 0; min-height: calc(100vh - 110px); }
+
+
+/* ── Sidebar ────────────────────────────────────────── */
+.sidebar {
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border);
+  padding: 20px;
+  overflow-y: auto;
+  max-height: calc(100vh - 110px);
+}
+.sidebar-section { margin-bottom: 24px; }
+.sidebar-title {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.5px; color: var(--text-dim);
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.sidebar-title::before {
+  content: ''; width: 3px; height: 14px;
+  background: linear-gradient(180deg, var(--accent), var(--cyan));
+  border-radius: 2px;
+}
+
+/* Form elements */
+label { display: block; font-size: 12px; color: var(--text-dim); margin-bottom: 4px; font-weight: 500; }
+select, input[type="number"], input[type="text"], textarea {
+  width: 100%; padding: 8px 12px;
+  background: var(--bg-input); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text);
+  font-family: 'Inter', sans-serif; font-size: 13px;
+  outline: none; transition: all 0.2s;
+  box-sizing: border-box;
+}
+textarea { resize: vertical; min-height: 200px; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+select:focus, input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+select { cursor: pointer; appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%238888aa' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center;
+  padding-right: 30px;
+}
+.form-row { margin-bottom: 12px; }
+.form-row-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.slider-row { display: flex; align-items: center; gap: 8px; }
+.slider-row input[type="range"] {
+  flex:1; -webkit-appearance: none; height: 4px;
+  background: var(--bg-input); border-radius: 2px; outline: none;
+}
+.slider-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 16px; height: 16px;
+  background: var(--accent); border-radius: 50%; cursor: pointer;
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+.slider-val { font-size: 13px; font-weight: 600; color: var(--accent-light); min-width: 36px; text-align: right; }
+.toggle-row { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 6px 0; }
+.toggle {
+  width: 36px; height: 20px; background: var(--bg-input); border-radius: 10px;
+  position: relative; transition: 0.3s; border: 1px solid var(--border);
+}
+.toggle::after {
+  content: ''; width: 14px; height: 14px; background: var(--text-dim);
+  border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: 0.3s;
+}
+.toggle.on { background: var(--accent); border-color: var(--accent); }
+.toggle.on::after { left: 18px; background: white; }
+
+.scenario-desc {
+  font-size: 11px; color: var(--text-dim); line-height: 1.5;
+  padding: 8px 10px; background: var(--bg-dark);
+  border-radius: var(--radius-sm); margin-top: 8px;
+  border-left: 2px solid var(--accent);
+}
+
+/* Buttons */
+.btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 20px; border: none; border-radius: var(--radius-sm);
+  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; width: 100%;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), #8b5cf6);
+  color: white; box-shadow: 0 4px 15px var(--accent-glow);
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px var(--accent-glow); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-danger { background: rgba(255,107,107,0.15); color: var(--red); border: 1px solid rgba(255,107,107,0.3); }
+.btn-danger:hover { background: rgba(255,107,107,0.25); }
+.btn-group { display: flex; gap: 8px; margin-top: 8px; }
+.btn-group .btn { flex: 1; }
+.btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent-light); }
+.btn-outline:hover { background: rgba(108,92,231,0.1); }
+
+/* ── Scenario Editor Forms ──────────────────────────── */
+.stage-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px; margin-bottom: 16px;
+  position: relative;
+}
+.action-card {
+  background: rgba(0,0,0,0.2);
+  border-left: 3px solid var(--accent);
+  padding: 12px; margin-bottom: 8px; margin-top: 12px;
+  position: relative;
+}
+.remove-btn {
+  position: absolute; top: 12px; right: 12px;
+  background: transparent; border: none; color: var(--red);
+  cursor: pointer; font-size: 16px; opacity: 0.7; transition: opacity 0.2s;
+}
+.remove-btn:hover { opacity: 1; }
+
+/* ── Content Area ───────────────────────────────────── */
+.content { padding: 20px; overflow-y: auto; max-height: calc(100vh - 110px); }
+.single-pane { padding: 40px; max-width: 900px; margin: 0 auto; }
+
+
+/* Stats row */
+.stats-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 20px; }
+.stat-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px 16px;
+  position: relative; overflow: hidden;
+}
+.stat-card::before {
+  content: ''; position: absolute; top: 0; left: 0;
+  width: 100%; height: 2px;
+}
+.stat-card.accent::before { background: linear-gradient(90deg, var(--accent), var(--accent-light)); }
+.stat-card.cyan::before { background: linear-gradient(90deg, var(--cyan), #81ecec); }
+.stat-card.green::before { background: linear-gradient(90deg, var(--green), #55efc4); }
+.stat-card.red::before { background: linear-gradient(90deg, var(--red), #fab1a0); }
+.stat-card.orange::before { background: linear-gradient(90deg, var(--orange), #ffeaa7); }
+.stat-card.pink::before { background: linear-gradient(90deg, var(--pink), #fdcbf1); }
+.stat-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); }
+.stat-value { font-size: 24px; font-weight: 800; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+/* Charts grid */
+.charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 20px; }
+.chart-panel {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px;
+}
+.chart-title {
+  font-size: 12px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--text-dim); margin-bottom: 12px;
+}
+canvas { width: 100% !important; }
+
+/* Network Topology */
+.topology-panel {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px; margin-bottom: 20px;
+}
+.topology-svg {
+  width: 100%; height: 300px; border-radius: var(--radius-sm);
+  background: var(--bg-dark); border: 1px solid var(--border);
+}
+
+/* Zone colors */
+.zone-a { fill: rgba(255,107,107,0.15); stroke: rgba(255,107,107,0.4); }
+.zone-b { fill: rgba(108,92,231,0.15); stroke: rgba(108,92,231,0.4); }
+.zone-c { fill: rgba(0,206,201,0.15); stroke: rgba(0,206,201,0.4); }
+.zone-d { fill: rgba(253,203,110,0.15); stroke: rgba(253,203,110,0.4); }
+.zone-e { fill: rgba(0,184,148,0.15); stroke: rgba(0,184,148,0.4); }
+.zone-f { fill: rgba(253,121,168,0.15); stroke: rgba(253,121,168,0.4); }
+
+.device-node { cursor: pointer; transition: all 0.2s; }
+.device-node:hover { filter: brightness(1.3); }
+.device-label { font-size: 8px; fill: var(--text-dim); font-family: 'Inter', sans-serif; }
+
+/* Attack Timeline */
+.timeline-panel {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px; margin-bottom: 20px;
+}
+.timeline-bar {
+  height: 32px; background: var(--bg-dark); border-radius: 16px;
+  overflow: hidden; position: relative; margin-top: 8px;
+}
+.timeline-pre { position: absolute; top: 0; left: 0; height: 100%; background: rgba(0,184,148,0.2); }
+.timeline-attack { position: absolute; top: 0; height: 100%; background: rgba(255,107,107,0.25); border-left: 2px solid var(--red); border-right: 2px solid var(--red); }
+.timeline-post { position: absolute; top: 0; height: 100%; right: 0; background: rgba(0,184,148,0.2); }
+.timeline-progress {
+  position: absolute; top: 0; left: 0; height: 100%;
+  background: linear-gradient(90deg, rgba(108,92,231,0.4), rgba(108,92,231,0.1));
+  border-right: 2px solid var(--accent-light);
+  transition: width 0.3s;
+}
+.timeline-labels { display: flex; justify-content: space-between; margin-top: 6px; font-size: 10px; color: var(--text-muted); }
+
+/* Event Feed */
+.bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.event-feed {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px;
+  max-height: 300px; overflow: hidden;
+}
+.event-list { max-height: 240px; overflow-y: auto; }
+.event-item {
+  display: grid; grid-template-columns: 70px 120px 1fr;
+  gap: 8px; padding: 6px 8px; font-size: 11px;
+  border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace;
+  animation: event-fade-in 0.3s ease;
+}
+@keyframes event-fade-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.event-time { color: var(--text-muted); }
+.event-type { font-weight: 600; }
+.event-type.attack { color: var(--red); }
+.event-type.benign { color: var(--green); }
+.event-type.warn { color: var(--orange); }
+.event-details { color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Protocol chart */
+.protocol-bars { display: flex; flex-direction: column; gap: 6px; }
+.proto-row { display: flex; align-items: center; gap: 8px; }
+.proto-name { font-size: 11px; font-weight: 600; width: 60px; text-align: right; color: var(--text-dim); }
+.proto-bar-bg { flex: 1; height: 16px; background: var(--bg-dark); border-radius: 8px; overflow: hidden; }
+.proto-bar { height: 100%; border-radius: 8px; transition: width 0.5s ease; min-width: 2px; }
+.proto-count { font-size: 10px; color: var(--text-muted); width: 50px; font-family: 'JetBrains Mono', monospace; }
+
+/* Progress bar */
+.progress-bar-outer {
+  width: 100%; height: 6px; background: var(--bg-dark);
+  border-radius: 3px; overflow: hidden; margin-top: 12px;
+}
+.progress-bar-inner {
+  height: 100%; border-radius: 3px; transition: width 0.3s;
+  background: linear-gradient(90deg, var(--accent), var(--cyan));
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg-hover); border-radius: 3px; }
+
+/* Responsive */
+@media (max-width: 1200px) { .stats-row { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 900px) { .main { grid-template-columns: 1fr; } .charts-grid { grid-template-columns: 1fr; } .bottom-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-left">
+    <div>
+      <div class="logo"><span class="logo-icon">⚕</span> IoMT Medical NIDS Simulator</div>
+      <div class="header-subtitle">Healthcare Network Intrusion Detection Dataset Generator</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="status-badge" id="statusBadge">
+      <div class="status-dot"></div>
+      <span id="statusText">Ready</span>
+    </div>
+  </div>
+</header>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('sim')">Live Simulation</button>
+  <button class="tab-btn" onclick="switchTab('dataset')">Generate Raw Dataset</button>
+  <button class="tab-btn" onclick="switchTab('editor')">Scenario Editor</button>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- ==============================================
+       TAB: LIVE SIMULATION
+       ============================================== -->
+  <div id="tab-sim" class="tab-content active panel-grid">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Attack Scenario</div>
+      <div class="form-row">
+        <label>Scenario</label>
+        <select id="scenario"></select>
+        <div class="scenario-desc" id="scenarioDesc">Select a scenario to see details</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">Simulation Parameters</div>
+      <div class="form-row-2col">
+        <div class="form-row">
+          <label>Duration (s)</label>
+          <input type="number" id="duration" value="3600" min="60" max="86400">
+        </div>
+        <div class="form-row">
+          <label>Seed</label>
+          <input type="number" id="seed" value="42" min="0" max="999999">
+        </div>
+      </div>
+      <div class="form-row-2col">
+        <div class="form-row">
+          <label>Attack Start (s)</label>
+          <input type="number" id="attackStart" value="420" min="0">
+        </div>
+        <div class="form-row">
+          <label>Attack Length (s)</label>
+          <input type="number" id="attackDuration" value="180" min="10">
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Intensity</label>
+        <div class="slider-row">
+          <input type="range" id="intensity" min="0.1" max="1" step="0.05" value="0.75">
+          <span class="slider-val" id="intensityVal">0.75</span>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Window Size (s)</label>
+        <select id="windowSize">
+          <option value="1">1</option>
+          <option value="5" selected>5</option>
+          <option value="10">10</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Output Directory</label>
+        <input type="text" id="outputDir" value="./output">
+      </div>
+      <div class="toggle-row" onclick="toggleStealth()">
+        <div class="toggle" id="stealthToggle"></div>
+        <span style="font-size:13px">Stealth Mode (low-and-slow)</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">Controls</div>
+      <button class="btn btn-primary" id="startBtn" onclick="startSim()">
+        ▶ &nbsp;Run Simulation
+      </button>
+      <div class="btn-group">
+        <button class="btn btn-danger" id="stopBtn" onclick="stopSim()" disabled>■ Stop</button>
+      </div>
+      <div class="progress-bar-outer" style="margin-top:12px">
+        <div class="progress-bar-inner" id="progressBar" style="width:0%"></div>
+      </div>
+      <div style="text-align:center; font-size:11px; color:var(--text-muted); margin-top:4px">
+        <span id="progressText">0%</span> · <span id="elapsedTime">0.0s</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Content -->
+  <div class="content">
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card accent">
+        <div class="stat-label">Total Flows</div>
+        <div class="stat-value" id="statFlows">0</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">Benign</div>
+        <div class="stat-value" id="statBenign">0</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-label">Attack</div>
+        <div class="stat-value" id="statAttack">0</div>
+      </div>
+      <div class="stat-card cyan">
+        <div class="stat-label">Windows</div>
+        <div class="stat-value" id="statWindows">0</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-label">Events</div>
+        <div class="stat-value" id="statEvents">0</div>
+      </div>
+      <div class="stat-card pink">
+        <div class="stat-label">Stage</div>
+        <div class="stat-value" id="statStage" style="font-size:13px">—</div>
+      </div>
+    </div>
+
+    <!-- Network Topology -->
+    <div class="topology-panel">
+      <div class="chart-title">🏥 Hospital Network Topology</div>
+      <svg class="topology-svg" id="topologySvg" viewBox="0 0 900 280"></svg>
+    </div>
+
+    <!-- Attack Timeline -->
+    <div class="timeline-panel">
+      <div class="chart-title">⏱ Attack Timeline</div>
+      <div class="timeline-bar">
+        <div class="timeline-pre" id="tlPre"></div>
+        <div class="timeline-attack" id="tlAttack"></div>
+        <div class="timeline-post" id="tlPost"></div>
+        <div class="timeline-progress" id="tlProgress" style="width:0%"></div>
+      </div>
+      <div class="timeline-labels">
+        <span>0s</span>
+        <span id="tlAttackLabel">Attack: 420s–600s</span>
+        <span id="tlDurationLabel">3600s</span>
+      </div>
+    </div>
+
+    <!-- Charts + Protocol -->
+    <div class="charts-grid">
+      <div class="chart-panel">
+        <div class="chart-title">📊 Traffic Rate (flows/window)</div>
+        <canvas id="trafficChart" height="160"></canvas>
+      </div>
+      <div class="chart-panel">
+        <div class="chart-title">📡 Protocol Distribution</div>
+        <div class="protocol-bars" id="protocolBars"></div>
+      </div>
+    </div>
+
+    <!-- Events + Zone Traffic -->
+      <div class="bottom-grid">
+        <div class="event-feed">
+          <div class="chart-title">🔔 Live Event Feed</div>
+          <div class="event-list" id="eventList"></div>
+        </div>
+        <div class="chart-panel">
+          <div class="chart-title">🗺 Zone-to-Zone Traffic</div>
+          <canvas id="zoneChart" height="200"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==============================================
+       TAB: DATASET GENERATOR
+       ============================================== -->
+  <div id="tab-dataset" class="tab-content">
+    <div class="single-pane">
+      <div class="chart-panel" style="margin-bottom: 24px;">
+        <h2 style="margin-bottom: 12px; display:flex; align-items:center; gap:8px;">
+          <span style="font-size:24px;">📊</span> Raw Time-Series Dataset Builder
+        </h2>
+        <p style="color:var(--text-dim); font-size:14px; line-height:1.6; margin-bottom: 20px;">
+          Generate a massive, production-grade <strong>time-series dataset</strong>. The builder runs all 24 attack scenarios deterministically over a 24-hour period, placing each attack in both the training (80%) and testing (20%) regions to ensure temporal consistency and model coverage. The output is pure per-flow data—no feature extraction.
+        </p>
+        
+        <div class="form-row-2col" style="margin-bottom: 20px; gap: 20px;">
+          <div class="form-row">
+            <label>Total Duration (s) — default 86400 (24h)</label>
+            <input type="number" id="dsDuration" value="86400" min="3600">
+          </div>
+          <div class="form-row">
+            <label>Attack Duration each (s)</label>
+            <input type="number" id="dsAttackLen" value="300" min="60">
+          </div>
+          <div class="form-row">
+            <label>Train Ratio (e.g. 0.8)</label>
+            <input type="number" id="dsTrainRatio" value="0.8" step="0.1" min="0.1" max="0.9">
+          </div>
+          <div class="form-row">
+            <label>Output Directory</label>
+            <input type="text" id="dsOutputDir" value="./dataset">
+          </div>
+        </div>
+        
+        <button class="btn btn-primary" id="dsStartBtn" onclick="generateDataset()" style="width: auto; padding: 12px 32px; font-size: 14px;">
+          ⚡ Build Dataset
+        </button>
+
+        <!-- Dataset Progress -->
+        <div id="dsProgressPanel" style="display: none; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border);">
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+            <span style="font-weight:600;" id="dsStateText">Building...</span>
+            <span style="color:var(--text-dim);" id="dsStatsText">0 flows generated</span>
+          </div>
+          <div class="progress-bar-outer" style="height: 12px; border-radius: 6px;">
+            <div class="progress-bar-inner" id="dsProgressBar" style="width:0%; border-radius: 6px; box-shadow: 0 0 15px var(--accent-glow);"></div>
+          </div>
+        </div>
+        <!-- Dataset Results -->
+        <div id="dsResultPanel" style="display: none; margin-top: 20px; background: rgba(0,184,148,0.1); border: 1px solid rgba(0,184,148,0.3); padding: 16px; border-radius: var(--radius-sm);">
+          <h4 style="color:var(--green); margin-bottom:12px;">✓ Generation Complete</h4>
+          <pre id="dsResultData" style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text); white-space:pre-wrap;"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==============================================
+       TAB: SCENARIO EDITOR
+       ============================================== -->
+  <div id="tab-editor" class="tab-content">
+    <div class="single-pane">
+      <div class="chart-panel">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+          <h2 style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:24px;">🔧</span> Custom Scenario Builder
+          </h2>
+          <button class="btn btn-outline" onclick="exportExamples()" style="width:auto;">Export Built-in Examples</button>
+        </div>
+        <p style="color:var(--text-dim); font-size:14px; margin-bottom: 20px;">
+          Define custom multi-stage kill chains. Fill out the form below to register a new scenario.
+        </p>
+        
+        <!-- Basic Info -->
+        <div class="form-row-2col" style="margin-bottom: 16px; gap: 16px;">
+          <div class="form-row"><label>Scenario ID</label><input type="text" id="seId" placeholder="e.g. CUST01"></div>
+          <div class="form-row"><label>Label (Name)</label><input type="text" id="seLabel" placeholder="e.g. My Custom Attack"></div>
+          <div class="form-row"><label>Primary Target</label><input type="text" id="seTarget" placeholder="e.g. CT Scanner A"></div>
+          <div class="form-row"><label>Entry Point (Zone)</label><input type="text" id="seEntry" placeholder="e.g. Guest Wi-Fi"></div>
+          <div class="form-row"><label>Protocols (comma-sep)</label><input type="text" id="seProtocols" placeholder="e.g. DICOM, HTTPS"></div>
+          <div class="form-row"><label>Signature/Desc</label><input type="text" id="seSig" placeholder="Short description of the kill chain"></div>
+        </div>
+        
+        <hr style="border: 0; border-top: 1px solid var(--border); margin: 24px 0;">
+        <h3 style="margin-bottom: 16px; color: var(--text);">Attack Stages</h3>
+        <div id="stagesContainer"></div>
+        
+        <button class="btn btn-outline" onclick="uiAddStage()" style="margin-bottom: 24px; width: 100%; border-style: dashed;">+ Add Stage</button>
+        
+        <div style="display:flex; gap:12px; justify-content:flex-end; border-top: 1px solid var(--border); padding-top: 20px;">
+          <button class="btn btn-outline" onclick="uiLoadTemplate()" style="width:auto;">Load Template</button>
+          <button class="btn btn-primary" id="saveScenarioBtn" onclick="uiSaveScenario()" style="width:auto;">💾 Save & Register Scenario</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ──────────────────────────────────────────────────────
+// State
+// ──────────────────────────────────────────────────────
+let scenarios = {};
+let networkAssets = [];
+let eventSource = null;
+let trafficData = { times: [], benign: [], attack: [] };
+let isRunning = false;
+
+// ──────────────────────────────────────────────────────
+// Init
+// ──────────────────────────────────────────────────────
+async function loadScenarios() {
+  const res = await fetch('/api/scenarios');
+  scenarios = await res.json();
+  const sel = document.getElementById('scenario');
+  sel.innerHTML = '';
+  for (const [id, s] of Object.entries(scenarios)) {
+    const opt = document.createElement('option');
+    opt.value = id;
+    opt.textContent = `${id} — ${s.label}`;
+    if (id === 'A14') opt.selected = true;
+    sel.appendChild(opt);
+  }
+}
+
+async function init() {
+  await loadScenarios();
+  document.getElementById('scenario').addEventListener('change', updateScenarioDesc);
+  updateScenarioDesc();
+
+  // Load network
+  const netRes = await fetch('/api/network');
+  const netData = await netRes.json();
+  networkAssets = netData.assets;
+  drawTopology();
+
+  // Intensity slider
+  document.getElementById('intensity').addEventListener('input', e => {
+    document.getElementById('intensityVal').textContent = parseFloat(e.target.value).toFixed(2);
+  });
+
+  updateTimeline();
+  document.getElementById('attackStart').addEventListener('input', updateTimeline);
+  document.getElementById('attackDuration').addEventListener('input', updateTimeline);
+  document.getElementById('duration').addEventListener('input', updateTimeline);
+}
+
+function updateScenarioDesc() {
+  const sid = document.getElementById('scenario').value;
+  const s = scenarios[sid];
+  if (s) {
+    document.getElementById('scenarioDesc').innerHTML =
+      `<b>Target:</b> ${s.target}<br>` +
+      `<b>Entry:</b> ${s.entry_point}<br>` +
+      `<b>Protocols:</b> ${s.protocols.join(', ')}<br>` +
+      `<b>Signature:</b> ${s.signature}` +
+      `<br><b>Stages:</b> ${s.stages.map(st => st.name).join(' → ')}`;
+  }
+}
+
+function toggleStealth() {
+  const t = document.getElementById('stealthToggle');
+  t.classList.toggle('on');
+}
+
+function updateTimeline() {
+  const dur = parseInt(document.getElementById('duration').value) || 3600;
+  const start = parseInt(document.getElementById('attackStart').value) || 420;
+  const len = parseInt(document.getElementById('attackDuration').value) || 180;
+  const end = Math.min(start + len, dur);
+
+  document.getElementById('tlPre').style.width = (start / dur * 100) + '%';
+  document.getElementById('tlAttack').style.left = (start / dur * 100) + '%';
+  document.getElementById('tlAttack').style.width = ((end - start) / dur * 100) + '%';
+
+  document.getElementById('tlAttackLabel').textContent = `Attack: ${start}s–${end}s`;
+  document.getElementById('tlDurationLabel').textContent = `${dur}s`;
+}
+
+// ──────────────────────────────────────────────────────
+// Topology SVG
+// ──────────────────────────────────────────────────────
+function drawTopology() {
+  const svg = document.getElementById('topologySvg');
+  const zones = {
+    zone_a: { x: 10, y: 10, w: 130, h: 115, label: 'Zone A · Internet Edge', color: '#ff6b6b' },
+    zone_b: { x: 155, y: 10, w: 170, h: 115, label: 'Zone B · Enterprise IT', color: '#6c5ce7' },
+    zone_c: { x: 340, y: 10, w: 240, h: 115, label: 'Zone C · Clinical Core', color: '#00cec9' },
+    zone_d: { x: 595, y: 10, w: 180, h: 115, label: 'Zone D · Imaging', color: '#fdcb6e' },
+    zone_e: { x: 155, y: 140, w: 430, h: 130, label: 'Zone E · IoMT Subnet', color: '#00b894' },
+    zone_f: { x: 790, y: 10, w: 100, h: 115, label: 'Zone F · Vendor', color: '#fd79a8' },
+  };
+
+  let html = '';
+
+  // Draw zone rectangles
+  for (const [zid, z] of Object.entries(zones)) {
+    html += `<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" rx="8"
+      fill="${z.color}15" stroke="${z.color}60" stroke-width="1"/>`;
+    html += `<text x="${z.x+6}" y="${z.y+14}" font-size="9" font-weight="700"
+      fill="${z.color}" font-family="Inter,sans-serif">${z.label}</text>`;
+  }
+
+  // Place device dots
+  const zoneDevices = {};
+  for (const a of networkAssets) {
+    if (!zoneDevices[a.zone]) zoneDevices[a.zone] = [];
+    zoneDevices[a.zone].push(a);
+  }
+
+  const icons = {
+    gateway: '🌐', firewall: '🛡', ad_server: '🔑', dns_server: '📋',
+    pacs_server: '🖼', ct_scanner: '📡', mri_scanner: '🧲',
+    patient_monitor: '💓', infusion_pump: '💉', ventilator: '🫁',
+    nurse_station: '👩‍⚕', ehr_frontend: '📊', fhir_server: '🔗',
+    wearable: '⌚', ble_gateway: '📶', vendor_jumphost: '🔧',
+  };
+
+  for (const [zid, devs] of Object.entries(zoneDevices)) {
+    const z = zones[zid];
+    if (!z) continue;
+    const cols = Math.min(devs.length, Math.floor(z.w / 28));
+    devs.forEach((d, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const dx = z.x + 20 + col * 26;
+      const dy = z.y + 30 + row * 28;
+
+      const critColor = d.criticality >= 9 ? '#ff6b6b' : d.criticality >= 7 ? '#fdcb6e' : '#00b894';
+      const icon = icons[d.role] || '🖥';
+
+      html += `<g class="device-node" data-name="${d.name}" data-ip="${d.ip}">
+        <circle cx="${dx}" cy="${dy}" r="10" fill="${z.color}30" stroke="${z.color}" stroke-width="1"/>
+        <text x="${dx}" y="${dy+4}" text-anchor="middle" font-size="10">${icon}</text>
+      </g>`;
+    });
+  }
+
+  // Traffic animation lines (hidden initially)
+  html += `<g id="trafficLines"></g>`;
+
+  svg.innerHTML = html;
+
+  // Tooltips
+  svg.querySelectorAll('.device-node').forEach(node => {
+    node.addEventListener('mouseenter', e => {
+      const name = node.dataset.name;
+      const ip = node.dataset.ip;
+      // Simple tooltip via title
+      node.querySelector('circle').innerHTML = `<title>${name} (${ip})</title>`;
+    });
+  });
+}
+
+// ──────────────────────────────────────────────────────
+// Traffic Chart (Canvas)
+// ──────────────────────────────────────────────────────
+function drawTrafficChart() {
+  const canvas = document.getElementById('trafficChart');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.clientWidth;
+  const H = canvas.clientHeight;
+  canvas.width = W * 2; canvas.height = H * 2;
+  ctx.scale(2, 2);
+  ctx.clearRect(0, 0, W, H);
+
+  const data = trafficData;
+  if (data.times.length < 2) return;
+
+  const maxVal = Math.max(1, ...data.benign, ...data.attack);
+  const n = data.times.length;
+  const dx = W / Math.max(1, n - 1);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 5; i++) {
+    const y = H * i / 4;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+
+  // Benign area
+  ctx.beginPath();
+  ctx.moveTo(0, H);
+  for (let i = 0; i < n; i++) {
+    ctx.lineTo(i * dx, H - (data.benign[i] / maxVal) * (H - 20));
+  }
+  ctx.lineTo((n-1)*dx, H);
+  ctx.closePath();
+  const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+  bgGrad.addColorStop(0, 'rgba(0,206,201,0.3)');
+  bgGrad.addColorStop(1, 'rgba(0,206,201,0.02)');
+  ctx.fillStyle = bgGrad;
+  ctx.fill();
+
+  // Benign line
+  ctx.beginPath();
+  for (let i = 0; i < n; i++) {
+    const x = i * dx, y = H - (data.benign[i] / maxVal) * (H - 20);
+    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  }
+  ctx.strokeStyle = '#00cec9'; ctx.lineWidth = 2; ctx.stroke();
+
+  // Attack area
+  ctx.beginPath();
+  ctx.moveTo(0, H);
+  for (let i = 0; i < n; i++) {
+    ctx.lineTo(i * dx, H - (data.attack[i] / maxVal) * (H - 20));
+  }
+  ctx.lineTo((n-1)*dx, H);
+  ctx.closePath();
+  const agGrad = ctx.createLinearGradient(0, 0, 0, H);
+  agGrad.addColorStop(0, 'rgba(255,107,107,0.35)');
+  agGrad.addColorStop(1, 'rgba(255,107,107,0.02)');
+  ctx.fillStyle = agGrad;
+  ctx.fill();
+
+  // Attack line
+  ctx.beginPath();
+  for (let i = 0; i < n; i++) {
+    const x = i * dx, y = H - (data.attack[i] / maxVal) * (H - 20);
+    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  }
+  ctx.strokeStyle = '#ff6b6b'; ctx.lineWidth = 2; ctx.stroke();
+
+  // Legend
+  ctx.font = '10px Inter'; ctx.fillStyle = '#00cec9';
+  ctx.fillRect(W - 120, 8, 10, 10); ctx.fillText('Benign', W - 105, 17);
+  ctx.fillStyle = '#ff6b6b';
+  ctx.fillRect(W - 60, 8, 10, 10); ctx.fillText('Attack', W - 45, 17);
+}
+
+function updateProtocolBars(protocols) {
+  const container = document.getElementById('protocolBars');
+  const total = Object.values(protocols).reduce((a, b) => a + b, 0) || 1;
+  const sorted = Object.entries(protocols).sort((a, b) => b[1] - a[1]).slice(0, 10);
+
+  const colors = {
+    HTTPS: '#6c5ce7', DICOM: '#fdcb6e', TCP: '#00cec9', BLE: '#00b894',
+    HL7: '#fd79a8', SMB: '#ff6b6b', SSH: '#a29bfe', DNS: '#81ecec',
+    SNMP: '#fab1a0', RDP: '#ffeaa7', HTTP: '#dfe6e9', FHIR: '#55efc4',
+    NTP: '#636e72', Syslog: '#b2bec3', LDAP: '#74b9ff',
+  };
+
+  container.innerHTML = sorted.map(([name, count]) => {
+    const pct = (count / total * 100).toFixed(1);
+    const color = colors[name] || '#8888aa';
+    return `<div class="proto-row">
+      <span class="proto-name">${name}</span>
+      <div class="proto-bar-bg">
+        <div class="proto-bar" style="width:${pct}%;background:${color}"></div>
+      </div>
+      <span class="proto-count">${count.toLocaleString()}</span>
+    </div>`;
+  }).join('');
+}
+
+// ──────────────────────────────────────────────────────
+// Simulation Control
+// ──────────────────────────────────────────────────────
+async function startSim() {
+  trafficData = { times: [], benign: [], attack: [] };
+  document.getElementById('eventList').innerHTML = '';
+
+  const body = {
+    scenario: document.getElementById('scenario').value,
+    duration: parseInt(document.getElementById('duration').value),
+    attack_start: parseInt(document.getElementById('attackStart').value),
+    attack_duration: parseInt(document.getElementById('attackDuration').value),
+    intensity: parseFloat(document.getElementById('intensity').value),
+    stealth: document.getElementById('stealthToggle').classList.contains('on'),
+    seed: parseInt(document.getElementById('seed').value),
+    window_size: parseInt(document.getElementById('windowSize').value),
+    output_dir: document.getElementById('outputDir').value,
+  };
+
+  const res = await fetch('/api/start', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (data.error) { alert(data.error); return; }
+
+  isRunning = true;
+  document.getElementById('startBtn').disabled = true;
+  document.getElementById('stopBtn').disabled = false;
+
+  const badge = document.getElementById('statusBadge');
+  badge.className = 'status-badge running';
+  document.getElementById('statusText').textContent = 'Running';
+
+  // Start SSE
+  connectSSE();
+
+  // Poll status
+  pollStatus();
+}
+
+async function stopSim() {
+  await fetch('/api/stop', { method: 'POST' });
+  isRunning = false;
+  document.getElementById('startBtn').disabled = false;
+  document.getElementById('stopBtn').disabled = true;
+  document.getElementById('statusBadge').className = 'status-badge';
+  document.getElementById('statusText').textContent = 'Stopped';
+  if (eventSource) { eventSource.close(); eventSource = null; }
+}
+
+function connectSSE() {
+  if (eventSource) eventSource.close();
+  eventSource = new EventSource('/api/events');
+
+  eventSource.addEventListener('progress', e => {
+    const d = JSON.parse(e.data);
+    trafficData.times.push(d.t);
+    trafficData.benign.push(d.benign);
+    trafficData.attack.push(d.attack);
+
+    document.getElementById('progressBar').style.width = d.pct + '%';
+    document.getElementById('progressText').textContent = d.pct.toFixed(1) + '%';
+    document.getElementById('tlProgress').style.width = d.pct + '%';
+    document.getElementById('statFlows').textContent = d.total_flows.toLocaleString();
+
+    if (d.stage) {
+      document.getElementById('statStage').textContent = d.stage;
+      if (d.attack > 0) {
+        document.getElementById('statusBadge').className = 'status-badge attack';
+        document.getElementById('statusText').textContent = 'Attack Active';
+      } else {
+        document.getElementById('statusBadge').className = 'status-badge running';
+        document.getElementById('statusText').textContent = 'Running';
+      }
+    }
+
+    if (trafficData.times.length % 3 === 0) drawTrafficChart();
+  });
+
+  eventSource.addEventListener('complete', e => {
+    const d = JSON.parse(e.data);
+    isRunning = false;
+    document.getElementById('startBtn').disabled = false;
+    document.getElementById('stopBtn').disabled = true;
+    document.getElementById('statusBadge').className = 'status-badge';
+    document.getElementById('statusText').textContent = 'Complete ✓';
+    document.getElementById('progressBar').style.width = '100%';
+    document.getElementById('progressText').textContent = '100%';
+    document.getElementById('elapsedTime').textContent = d.elapsed + 's';
+    drawTrafficChart();
+    eventSource.close(); eventSource = null;
+  });
+
+  eventSource.addEventListener('error', e => {
+    if (e.data) {
+      const d = JSON.parse(e.data);
+      alert('Simulation error: ' + d.msg);
+    }
+  });
+
+  eventSource.addEventListener('dataset-progress', e => {
+    const d = JSON.parse(e.data);
+    document.getElementById('dsProgressBar').style.width = d.pct + '%';
+    document.getElementById('dsStateText').textContent = 'Building Dataset: ' + d.pct + '%';
+    document.getElementById('dsStatsText').textContent = d.flows.toLocaleString() + ' flows generated';
+  });
+
+  eventSource.addEventListener('dataset-complete', e => {
+    const d = JSON.parse(e.data);
+    document.getElementById('dsStartBtn').disabled = false;
+    document.getElementById('dsProgressBar').style.width = '100%';
+    document.getElementById('dsStateText').textContent = 'Done!';
+    document.getElementById('dsResultPanel').style.display = 'block';
+    document.getElementById('dsResultData').textContent = JSON.stringify(d, null, 2);
+  });
+}
+
+async function pollStatus() {
+  while (isRunning) {
+    try {
+      const res = await fetch('/api/status');
+      const s = await res.json();
+      document.getElementById('statFlows').textContent = s.total_flows.toLocaleString();
+      document.getElementById('statBenign').textContent = s.benign_flows.toLocaleString();
+      document.getElementById('statAttack').textContent = s.attack_flows.toLocaleString();
+      document.getElementById('statWindows').textContent = s.total_windows.toLocaleString();
+      document.getElementById('statEvents').textContent = s.total_events.toLocaleString();
+      document.getElementById('elapsedTime').textContent = s.elapsed + 's';
+
+      if (s.protocol_counts) updateProtocolBars(s.protocol_counts);
+
+      // Update events
+      if (s.recent_events && s.recent_events.length > 0) {
+        const list = document.getElementById('eventList');
+        const existingCount = list.children.length;
+        const newEvents = s.recent_events.slice(existingCount);
+        for (const ev of newEvents) {
+          const cls = ev.label === 'benign' ? 'benign' : (ev.type.includes('error') || ev.type.includes('attack') ? 'attack' : 'warn');
+          const div = document.createElement('div');
+          div.className = 'event-item';
+          div.innerHTML = `<span class="event-time">${ev.ts}s</span>
+            <span class="event-type ${cls}">${ev.type}</span>
+            <span class="event-details">${ev.src} → ${ev.dst} ${ev.details}</span>`;
+          list.prepend(div);
+        }
+        // Keep max 100
+        while (list.children.length > 100) list.removeChild(list.lastChild);
+      }
+
+      if (!s.running && s.done) break;
+    } catch (e) {}
+    await new Promise(r => setTimeout(r, 500));
+  }
+}
+
+// ──────────────────────────────────────────────────────
+// Tabs & New Features
+// ──────────────────────────────────────────────────────
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-' + tabId).classList.add('active');
+}
+
+async function generateDataset() {
+  document.getElementById('dsStartBtn').disabled = true;
+  document.getElementById('dsProgressPanel').style.display = 'block';
+  document.getElementById('dsResultPanel').style.display = 'none';
+  document.getElementById('dsProgressBar').style.width = '0%';
+  document.getElementById('dsStateText').textContent = 'Initializing...';
+  
+  const body = {
+    duration: parseInt(document.getElementById('dsDuration').value) || 86400,
+    attack_duration: parseInt(document.getElementById('dsAttackLen').value) || 300,
+    train_ratio: parseFloat(document.getElementById('dsTrainRatio').value) || 0.8,
+    output_dir: document.getElementById('dsOutputDir').value || './dataset'
+  };
+
+  const res = await fetch('/api/generate-dataset', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+  });
+  if (!eventSource) connectSSE(); 
+}
+
+// ──────────────────────────────────────────────────────
+// Scenario Editor GUI Logic
+// ──────────────────────────────────────────────────────
+let stageCtr = 0;
+let actionCtr = 0;
+
+function uiAddStage(data = null) {
+  const id = stageCtr++;
+  const c = document.getElementById('stagesContainer');
+  const div = document.createElement('div');
+  div.className = 'stage-card';
+  div.id = 'stage_' + id;
+  
+  const name = data ? data.name : `stage_${id}`;
+  const frac = data ? data.duration_frac : 0.5;
+  const desc = data ? data.description : '';
+
+  div.innerHTML = `
+    <button class="remove-btn" onclick="document.getElementById('stage_${id}').remove()">✕</button>
+    <div class="form-row-2col" style="margin-bottom: 0; gap: 12px;">
+      <div class="form-row"><label>Stage Name</label><input type="text" class="stg-name" value="${name}"></div>
+      <div class="form-row"><label>Duration Fraction (0.0 - 1.0)</label><input type="number" step="0.1" class="stg-frac" value="${frac}"></div>
+      <div class="form-row" style="grid-column: span 2;"><label>Description</label><input type="text" class="stg-desc" value="${desc}"></div>
+    </div>
+    <div id="actions_${id}"></div>
+    <button class="btn btn-outline" onclick="uiAddAction(${id})" style="margin-top: 12px; padding: 6px 12px; font-size: 11px; width: auto;">+ Add Action</button>
+  `;
+  c.appendChild(div);
+
+  if (data && data.actions) {
+    data.actions.forEach(act => uiAddAction(id, act));
+  } else if (!data) {
+    uiAddAction(id);
+  }
+}
+
+function uiAddAction(stageId, data = null) {
+  const aid = actionCtr++;
+  const c = document.getElementById('actions_' + stageId);
+  const div = document.createElement('div');
+  div.className = 'action-card';
+  div.id = 'action_' + aid;
+
+  const type = data ? data.type : 'scan';
+  const proto = data ? data.protocol : 'TCP';
+  const rate = data ? data.rate : 50;
+  const role = data ? data.dst_role : 'ct_scanner';
+  const bytes = data && data.bytes ? data.bytes : 5000000;
+
+  div.innerHTML = `
+    <button class="remove-btn" onclick="document.getElementById('action_${aid}').remove()" style="top: 8px;">✕</button>
+    <div class="form-row-2col" style="gap: 12px; margin-bottom: 0;">
+      <div class="form-row">
+        <label>Action Type</label>
+        <select class="act-type" onchange="uiToggleActionFields(${aid})">
+          <option value="scan" ${type==='scan'?'selected':''}>scan</option>
+          <option value="data_upload" ${type==='data_upload'?'selected':''}>data_upload (Exfil)</option>
+          <option value="data_download" ${type==='data_download'?'selected':''}>data_download</option>
+          <option value="dos_flood" ${type==='dos_flood'?'selected':''}>dos_flood</option>
+          <option value="dicom_query_flood" ${type==='dicom_query_flood'?'selected':''}>dicom_query_flood</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Protocol</label><input type="text" class="act-proto" value="${proto}"></div>
+      <div class="form-row"><label>Flows / Window (Rate)</label><input type="number" class="act-rate" value="${rate}"></div>
+      <div class="form-row"><label>Target Asset Role</label><input type="text" class="act-role" value="${role}"></div>
+      <div class="form-row act-bytes-row" id="ab_${aid}"><label>Bytes Transferred</label><input type="number" class="act-bytes" value="${bytes}"></div>
+    </div>
+  `;
+  c.appendChild(div);
+  uiToggleActionFields(aid);
+}
+
+function uiToggleActionFields(aid) {
+  const div = document.getElementById('action_' + aid);
+  if (!div) return;
+  const type = div.querySelector('.act-type').value;
+  const bRow = document.getElementById('ab_' + aid);
+  if (type === 'data_upload' || type === 'data_download') bRow.style.display = 'block';
+  else bRow.style.display = 'none';
+}
+
+function uiBuildJson() {
+  const sc = {
+    scenario_id: document.getElementById('seId').value || 'CUST_X',
+    label: document.getElementById('seLabel').value,
+    primary_target: document.getElementById('seTarget').value,
+    entry_point: document.getElementById('seEntry').value,
+    signature_description: document.getElementById('seSig').value,
+    affected_protocols: document.getElementById('seProtocols').value.split(',').map(s=>s.trim()).filter(s=>s),
+    stages: []
+  };
+
+  document.querySelectorAll('.stage-card').forEach(stg => {
+    const sObj = {
+      name: stg.querySelector('.stg-name').value,
+      duration_frac: parseFloat(stg.querySelector('.stg-frac').value) || 0.1,
+      description: stg.querySelector('.stg-desc').value,
+      actions: []
+    };
+    stg.querySelectorAll('.action-card').forEach(act => {
+      const type = act.querySelector('.act-type').value;
+      const aObj = {
+        type: type,
+        protocol: act.querySelector('.act-proto').value,
+        rate: parseInt(act.querySelector('.act-rate').value) || 10,
+        dst_role: act.querySelector('.act-role').value
+      };
+      if (type === 'data_upload' || type === 'data_download') {
+        aObj.bytes = parseInt(act.querySelector('.act-bytes').value) || 1000;
+      }
+      sObj.actions.push(aObj);
+    });
+    sc.stages.push(sObj);
+  });
+  return sc;
+}
+
+function uiLoadTemplate() {
+  document.getElementById('seId').value = "CUST01";
+  document.getElementById('seLabel').value = "My Custom Data Exfil";
+  document.getElementById('seTarget').value = "CT Scanner A";
+  document.getElementById('seEntry').value = "Guest Wi-Fi";
+  document.getElementById('seProtocols').value = "DICOM, HTTPS";
+  document.getElementById('seSig').value = "Custom sequence targeting imaging";
+  
+  document.getElementById('stagesContainer').innerHTML = '';
+  
+  uiAddStage({
+    name: "recon", duration_frac: 0.2, description: "Port scanning",
+    actions: [{ type: "scan", protocol: "TCP", rate: 50, dst_role: "ct_scanner" }]
+  });
+  uiAddStage({
+    name: "exfil", duration_frac: 0.8, description: "Data theft",
+    actions: [{ type: "data_upload", protocol: "DICOM", rate: 200, bytes: 50000000, dst_role: "ct_scanner" }]
+  });
+}
+
+async function uiSaveScenario() {
+  try {
+    const data = uiBuildJson();
+    const res = await fetch('/api/save-scenario', {
+      method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data)
+    });
+    const result = await res.json();
+    if (result.error) alert('Error: ' + result.error);
+    else {
+      alert('Saved successfully! Reloading scenario list.');
+      await loadScenarios();
+      switchTab('sim');
+    }
+  } catch (e) {
+    alert("Error saving: " + e);
+  }
+}
+
+async function exportExamples() {
+  const res = await fetch('/api/export-examples', {method: 'POST'});
+  const data = await res.json();
+  if (data.error) alert(data.error);
+  else alert('Exported to ' + data.saved_dir);
+}
+
+// Init
+init();
+</script>
+</body>
+</html>

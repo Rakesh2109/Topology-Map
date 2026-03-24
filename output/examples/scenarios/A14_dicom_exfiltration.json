@@ -1,0 +1,37 @@
+{
+  "scenario_id": "A14",
+  "label": "dicom_exfiltration",
+  "attack_path": "Compromised radiology host",
+  "primary_target": "PACS / viewer / archive",
+  "target_roles": [
+    "pacs_server",
+    "dicom_viewer",
+    "imaging_archive_gw"
+  ],
+  "affected_protocols": [
+    "DICOM",
+    "HTTPS"
+  ],
+  "entry_point": "imaging_subnet",
+  "target_asset": "pacs_server_01",
+  "default_intensity": 0.7,
+  "default_stealth": false,
+  "stages": [
+    {
+      "name": "study_enum",
+      "duration_frac": 0.2,
+      "description": "Enumerate available studies"
+    },
+    {
+      "name": "bulk_transfer",
+      "duration_frac": 0.6,
+      "description": "Sustained large DICOM transfers"
+    },
+    {
+      "name": "exfil_external",
+      "duration_frac": 0.2,
+      "description": "Outbound bytes surge to unusual peer"
+    }
+  ],
+  "signature_description": "Sustained large DICOM bytes to unusual peer, many study moves, outbound bytes surge"
+}

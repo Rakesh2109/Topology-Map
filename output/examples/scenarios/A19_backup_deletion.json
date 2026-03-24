@@ -1,0 +1,35 @@
+{
+  "scenario_id": "A19",
+  "label": "backup_deletion",
+  "attack_path": "Compromised admin host",
+  "primary_target": "Backup server",
+  "target_roles": [
+    "backup_server"
+  ],
+  "affected_protocols": [
+    "SMB",
+    "HTTPS"
+  ],
+  "entry_point": "enterprise_it",
+  "target_asset": "backup_server_01",
+  "default_intensity": 0.7,
+  "default_stealth": true,
+  "stages": [
+    {
+      "name": "backup_discover",
+      "duration_frac": 0.3,
+      "description": "Backup share flows appear"
+    },
+    {
+      "name": "backup_delete",
+      "duration_frac": 0.5,
+      "description": "Admin/API deletion calls"
+    },
+    {
+      "name": "verify_delete",
+      "duration_frac": 0.2,
+      "description": "Drop in routine backup traffic"
+    }
+  ],
+  "signature_description": "Backup share flows appear, admin/API deletion calls, drop in routine backup traffic"
+}

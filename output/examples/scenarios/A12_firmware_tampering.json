@@ -1,0 +1,39 @@
+{
+  "scenario_id": "A12",
+  "label": "firmware_tampering",
+  "attack_path": "Internal privileged access",
+  "primary_target": "IoMT device fleet",
+  "target_roles": [
+    "device_mgmt_server",
+    "patient_monitor",
+    "infusion_pump",
+    "ventilator"
+  ],
+  "affected_protocols": [
+    "HTTPS",
+    "TCP",
+    "SSH"
+  ],
+  "entry_point": "clinical_subnet",
+  "target_asset": "device_mgmt_01",
+  "default_intensity": 0.7,
+  "default_stealth": false,
+  "stages": [
+    {
+      "name": "update_push",
+      "duration_frac": 0.5,
+      "description": "Large management transfers to devices"
+    },
+    {
+      "name": "device_reboot",
+      "duration_frac": 0.3,
+      "description": "Device reboot and reconnect wave"
+    },
+    {
+      "name": "verify",
+      "duration_frac": 0.2,
+      "description": "Verify firmware applied"
+    }
+  ],
+  "signature_description": "Large management transfers, update endpoint traffic, device reboot silence or reconnect wave"
+}

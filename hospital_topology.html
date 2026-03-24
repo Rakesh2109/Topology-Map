@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>IoMT Simulator - Hospital Network Topology</title>
+  <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at 50% 100%, #1a1a2e, #0f0f1a);
+      color: #fff;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .header {
+      padding: 20px 40px;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 800;
+      background: linear-gradient(90deg, #00cec9, #6c5ce7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .header p {
+      margin: 4px 0 0 0;
+      color: #a0a0b0;
+      font-size: 14px;
+    }
+    .content {
+      display: flex;
+      height: calc(100vh - 80px);
+      position: relative;
+    }
+    #network {
+      flex: 1;
+      height: 100%;
+      border-right: 1px solid rgba(255,255,255,0.05);
+      outline: none;
+    }
+    .sidebar {
+      width: 320px;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 24px;
+      overflow-y: auto;
+      z-index: 10;
+    }
+    .sidebar h2 {
+      margin-top: 0;
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #fff;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding-bottom: 10px;
+    }
+    .zone-legend {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+      padding: 10px;
+      background: rgba(255,255,255,0.02);
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    .zone-legend:hover {
+      background: rgba(255,255,255,0.05);
+      transform: translateX(-2px);
+    }
+    .zone-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      margin-right: 12px;
+      box-shadow: 0 0 10px currentColor;
+    }
+    .zone-info h3 {
+      margin: 0 0 4px 0;
+      font-size: 14px;
+    }
+    .zone-info p {
+      margin: 0;
+      font-size: 12px;
+      color: #a0a0b0;
+    }
+    /* Vis.js tooltip styling */
+    .vis-tooltip {
+      background-color: rgba(20, 20, 30, 0.95) !important;
+      border: 1px solid var(--accent, #6c5ce7) !important;
+      color: #fff !important;
+      font-family: 'Inter', sans-serif !important;
+      padding: 12px !important;
+      border-radius: 8px !important;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+      font-size: 13px !important;
+      backdrop-filter: blur(10px);
+    }
+    .info-panel {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(20, 20, 30, 0.8);
+      border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      padding: 16px;
+      border-radius: 12px;
+      max-width: 300px;
+      pointer-events: none;
+    }
+    .info-panel h4 { margin: 0 0 8px 0; color: #00cec9; }
+    .info-panel p { margin: 0; font-size: 12px; color: #b2bec3; line-height: 1.5; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div>
+      <h1>🏥 Medical NIDS Topology Map</h1>
+      <p>Interactive graph of the default medium_hospital.json architecture.</p>
+    </div>
+    <div style="color: #a0a0b0; font-size: 13px;">Scroll to zoom. Drag to move.</div>
+  </div>
+
+  <div class="content">
+    <div id="network"></div>
+    
+    <div class="info-panel">
+      <h4>Simulation Graph</h4>
+      <p>This interactive diagram maps all 38 assets across the 6 network segments. Double-click a cluster to snap to it. Hover over nodes to see their role, IP, and criticality score.</p>
+    </div>
+
+    <div class="sidebar">
+      <h2>Network Segments & Actors</h2>
+
+      <div class="zone-legend">
+        <div class="zone-color" style="background:#ff0000; color:#ff0000; box-shadow: 0 0 15px #ff0000;"></div>
+        <div class="zone-info">
+          <h3 style="color:#ff6b6b">Threat Actors 💀</h3>
+          <p>Malicious external hackers or compromised insider devices initiating attacks.</p>
+        </div>
+      </div>
+      
+      <div class="zone-legend">
+        <div class="zone-color" style="background:#ff6b6b; color:#ff6b6b"></div>
+        <div class="zone-info">
+          <h3>Zone A: Internet Edge</h3>
+          <p>Public-facing. Contains Gateways and External Firewalls. Highly attacked.</p>
+        </div>
+      </div>
+
+      <div class="zone-legend">
+        <div class="zone-color" style="background:#6c5ce7; color:#6c5ce7"></div>
+        <div class="zone-info">
+          <h3>Zone B: Enterprise IT</h3>
+          <p>Corporate infra (AD servers, DNS, workstations). Often the initial breach point.</p>
+        </div>
+      </div>
+
+      <div class="zone-legend">
+        <div class="zone-color" style="background:#00cec9; color:#00cec9"></div>
+        <div class="zone-info">
+          <h3>Zone C: Clinical Core</h3>
+          <p>EHR, PACS, FHIR servers. The brains of the hospital data. High high-value targets.</p>
+        </div>
+      </div>
+
+      <div class="zone-legend">
+        <div class="zone-color" style="background:#fdcb6e; color:#fdcb6e"></div>
+        <div class="zone-info">
+          <h3>Zone D: Imaging</h3>
+          <p>CT Scanners, MRI. Heavy DICOM traffic. High bandwidth, legacy OS risks.</p>
+        </div>
+      </div>
+
+      <div class="zone-legend">
+        <div class="zone-color" style="background:#00b894; color:#00b894"></div>
+        <div class="zone-info">
+          <h3>Zone E: IoMT Subnet</h3>
+          <p>Patient monitors, infusion pumps, wearables. Crucial for life support. Low computing power.</p>
+        </div>
+      </div>
+
+      <div class="zone-legend">
+        <div class="zone-color" style="background:#fd79a8; color:#fd79a8"></div>
+        <div class="zone-info">
+          <h3>Zone F: Vendor Area</h3>
+          <p>Remote maintenance jump hosts. Vulnerable to supply chain attacks.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // Colors per zone
+  const colors = {
+    zone_a: { background: 'rgba(255,107,107,0.15)', border: '#ff6b6b', highlight: '#ff6b6b', font: '#fff' },
+    zone_b: { background: 'rgba(108,92,231,0.15)', border: '#6c5ce7', highlight: '#6c5ce7', font: '#fff' },
+    zone_c: { background: 'rgba(0,206,201,0.15)', border: '#00cec9', highlight: '#00cec9', font: '#fff' },
+    zone_d: { background: 'rgba(253,203,110,0.15)', border: '#fdcb6e', highlight: '#fdcb6e', font: '#fff' },
+    zone_e: { background: 'rgba(0,184,148,0.15)', border: '#00b894', highlight: '#00b894', font: '#fff' },
+    zone_f: { background: 'rgba(253,121,168,0.15)', border: '#fd79a8', highlight: '#fd79a8', font: '#fff' },
+  };
+
+  // Icons based on role matches
+  function getIcon(role) {
+    if (role.includes('attacker')) return '💀';
+    if (role.includes('rogue')) return '🥷';
+    if (role.includes('gateway')) return '🌐';
+    if (role.includes('firewall')) return '🛡️';
+    if (role.includes('ad_') || role.includes('dns_')) return '🗄️';
+    if (role.includes('pacs') || role.includes('ehr') || role.includes('fhir')) return '🏥';
+    if (role.includes('ct_') || role.includes('mri_')) return '☢️';
+    if (role.includes('monitor') || role.includes('pump') || role.includes('ventilator')) return '🫀';
+    if (role.includes('wearable')) return '⌚';
+    if (role.includes('vendor')) return '👨‍💻';
+    if (role.includes('workstation') || role.includes('nurse')) return '💻';
+    return '🖥️';
+  }
+
+  // The devices from medium_hospital.json + Attackers
+  const rawAssets = [
+    // --- THREAT ACTORS (VISUAL ONLY) ---
+    { name: "External APT / Botnet", ip: "84.23.11.9", zone: "zone_a", role: "attacker", crit: 10 },
+    { name: "Compromised Laptop", ip: "10.0.5.99", zone: "zone_f", role: "rogue_device", crit: 8 },
+    { name: "Rogue Raspberry Pi", ip: "10.0.4.99", zone: "zone_e", role: "rogue_device", crit: 10 },
+    { name: "Phishing Victim PC", ip: "10.0.1.60", zone: "zone_b", role: "rogue_device", crit: 9 },
+
+    // --- HOSPITAL INFRASTRUCTURE ---
+    { name: "Main FW", ip: "10.0.0.1", zone: "zone_a", role: "firewall", crit: 10 },
+    { name: "Internet GW", ip: "10.0.0.254", zone: "zone_a", role: "gateway", crit: 10 },
+    
+    { name: "AD Server", ip: "10.0.1.10", zone: "zone_b", role: "ad_server", crit: 9 },
+    { name: "DNS Server", ip: "10.0.1.11", zone: "zone_b", role: "dns_server", crit: 8 },
+    { name: "Admin PC 1", ip: "10.0.1.50", zone: "zone_b", role: "it_workstation", crit: 4 },
+    { name: "Admin PC 2", ip: "10.0.1.51", zone: "zone_b", role: "it_workstation", crit: 4 },
+    { name: "Admin PC 3", ip: "10.0.1.52", zone: "zone_b", role: "it_workstation", crit: 4 },
+    { name: "Admin PC 4", ip: "10.0.1.53", zone: "zone_b", role: "it_workstation", crit: 4 },
+    
+    { name: "PACS Primary", ip: "10.0.2.20", zone: "zone_c", role: "pacs_server", crit: 10 },
+    { name: "PACS Backup", ip: "10.0.2.21", zone: "zone_c", role: "pacs_server", crit: 8 },
+    { name: "EHR Frontend", ip: "10.0.2.30", zone: "zone_c", role: "ehr_frontend", crit: 9 },
+    { name: "FHIR API", ip: "10.0.2.31", zone: "zone_c", role: "fhir_server", crit: 9 },
+    
+    { name: "CT Scanner A", ip: "10.0.3.40", zone: "zone_d", role: "ct_scanner", crit: 8 },
+    { name: "CT Scanner B", ip: "10.0.3.41", zone: "zone_d", role: "ct_scanner", crit: 8 },
+    { name: "MRI Machine", ip: "10.0.3.42", zone: "zone_d", role: "mri_scanner", crit: 8 },
+    { name: "Ultrasound", ip: "10.0.3.45", zone: "zone_d", role: "ultrasound", crit: 6 },
+    { name: "X-Ray", ip: "10.0.3.46", zone: "zone_d", role: "xray", crit: 6 },
+    { name: "Imaging Workstation", ip: "10.0.3.50", zone: "zone_d", role: "radiology_workstation", crit: 5 },
+    
+    { name: "Patient Monitor ICU1", ip: "10.0.4.101", zone: "zone_e", role: "patient_monitor", crit: 9 },
+    { name: "Patient Monitor ICU2", ip: "10.0.4.102", zone: "zone_e", role: "patient_monitor", crit: 9 },
+    { name: "Patient Monitor ICU3", ip: "10.0.4.103", zone: "zone_e", role: "patient_monitor", crit: 9 },
+    { name: "Patient Monitor ICU4", ip: "10.0.4.104", zone: "zone_e", role: "patient_monitor", crit: 9 },
+    { name: "Infusion Pump 1", ip: "10.0.4.150", zone: "zone_e", role: "infusion_pump", crit: 10 },
+    { name: "Infusion Pump 2", ip: "10.0.4.151", zone: "zone_e", role: "infusion_pump", crit: 10 },
+    { name: "Infusion Pump 3", ip: "10.0.4.152", zone: "zone_e", role: "infusion_pump", crit: 10 },
+    { name: "Infusion Pump 4", ip: "10.0.4.153", zone: "zone_e", role: "infusion_pump", crit: 10 },
+    { name: "Ventilator 1", ip: "10.0.4.180", zone: "zone_e", role: "ventilator", crit: 10 },
+    { name: "Ventilator 2", ip: "10.0.4.181", zone: "zone_e", role: "ventilator", crit: 10 },
+    { name: "ECG Machine", ip: "10.0.4.200", zone: "zone_e", role: "ecg", crit: 7 },
+    { name: "BLE Gateway", ip: "10.0.4.220", zone: "zone_e", role: "ble_gateway", crit: 6 },
+    { name: "Wearable Sensor 1", ip: "10.0.4.221", zone: "zone_e", role: "wearable", crit: 5 },
+    { name: "Wearable Sensor 2", ip: "10.0.4.222", zone: "zone_e", role: "wearable", crit: 5 },
+    { name: "Nurse Station 1", ip: "10.0.4.50", zone: "zone_e", role: "nurse_station", crit: 6 },
+    { name: "Nurse Station 2", ip: "10.0.4.51", zone: "zone_e", role: "nurse_station", crit: 6 },
+    
+    { name: "Vendor Jump Host", ip: "10.0.5.10", zone: "zone_f", role: "vendor_jumphost", crit: 8 },
+    { name: "Maintenance Server", ip: "10.0.5.11", zone: "zone_f", role: "maintenance_server", crit: 6 }
+  ];
+
+  // Map data to vis nodes
+  const nodesArr = [];
+  const edgesArr = [];
+
+  // Group nodes (Central switch for each zone)
+  const zoneNodes = {
+    zone_a: { id: 100, label: "Edge Switch", group: "zone_a" },
+    zone_b: { id: 200, label: "IT Switch", group: "zone_b" },
+    zone_c: { id: 300, label: "Core Switch", group: "zone_c" },
+    zone_d: { id: 400, label: "Imaging Switch", group: "zone_d" },
+    zone_e: { id: 500, label: "IoMT Switch", group: "zone_e" },
+    zone_f: { id: 600, label: "VPN/Vendor Switch", group: "zone_f" },
+  };
+
+  // Add zone nodes
+  for (let z in zoneNodes) {
+    nodesArr.push({
+      id: zoneNodes[z].id,
+      label: zoneNodes[z].label,
+      shape: 'hexagon',
+      size: 30,
+      color: colors[zoneNodes[z].group],
+      font: { color: 'white' },
+      borderWidth: 2,
+      title: `<b>${zoneNodes[z].label}</b><br>Core routing for ${z}`
+    });
+  }
+
+  // Inter-zone routing (The backbone)
+  const backboneColor = 'rgba(255,255,255,0.2)';
+  edgesArr.push({ from: 100, to: 200, width: 4, color: backboneColor, smooth: false });
+  edgesArr.push({ from: 200, to: 300, width: 6, color: backboneColor, smooth: false });
+  edgesArr.push({ from: 300, to: 400, width: 6, color: backboneColor, smooth: false });
+  edgesArr.push({ from: 300, to: 500, width: 6, color: backboneColor, smooth: false });
+  edgesArr.push({ from: 100, to: 600, width: 4, color: backboneColor, smooth: false });
+
+  // Add individual device nodes
+  rawAssets.forEach((asset, idx) => {
+    let c = colors[asset.zone];
+    let isAttacker = asset.role === 'attacker' || asset.role === 'rogue_device';
+    
+    if (isAttacker) {
+      c = { background: 'rgba(255,0,0,0.2)', border: '#ff0000', highlight: '#ff0000', font: '#fff' };
+    }
+    
+    const icon = getIcon(asset.role);
+    
+    nodesArr.push({
+      id: idx,
+      label: `${icon}\n${asset.name}`,
+      shape: 'box',
+      borderWidth: isAttacker ? 3 : 2,
+      color: c,
+      font: { color: 'white', face: 'Inter', size: 12 },
+      title: `
+        <div style="font-size: 14px; font-weight: bold; margin-bottom: 4px; color: ${c.border};">${asset.name}</div>
+        <div><b>IP Address:</b> ${asset.ip}</div>
+        <div><b>Role:</b> ${asset.role}</div>
+        <div><b>Zone:</b> ${asset.zone}</div>
+        ${isAttacker ? '<div><b>Type:</b> Malicious Threat Source</div>' : `<div><b>Criticality:</b> ${asset.crit}/10</div>`}
+      `,
+      shadow: isAttacker ? { enabled: true, color: 'rgba(255,0,0,0.8)', size: 15, x: 0, y: 0 } : undefined
+    });
+
+    // Connect to parent switch
+    edgesArr.push({
+      from: zoneNodes[asset.zone].id,
+      to: idx,
+      width: 1,
+      color: c.highlight + 'aa'
+    });
+  });
+
+  // Vis setup
+  const container = document.getElementById('network');
+  const data = {
+    nodes: new vis.DataSet(nodesArr),
+    edges: new vis.DataSet(edgesArr)
+  };
+  const options = {
+    nodes: {
+      shadow: { enabled: true, color: 'rgba(0,0,0,0.5)', size: 10, x: 0, y: 5 },
+      margin: 10
+    },
+    edges: {
+      smooth: { type: 'continuous' }
+    },
+    physics: {
+      forceAtlas2Based: {
+        gravitationalConstant: -120,
+        centralGravity: 0.015,
+        springLength: 150,
+        springConstant: 0.08
+      },
+      maxVelocity: 50,
+      solver: 'forceAtlas2Based',
+      timestep: 0.35,
+      stabilization: { iterations: 150 }
+    },
+    interaction: {
+      hover: true,
+      tooltipDelay: 100,
+      zoomView: true
+    }
+  };
+
+  const network = new vis.Network(container, data, options);
+
+</script>
+</body>
+</html>

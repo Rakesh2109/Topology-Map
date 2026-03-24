@@ -1,0 +1,33 @@
+{
+  "scenario_id": "A01",
+  "label": "external_recon",
+  "attack_path": "Internet",
+  "primary_target": "Gateway, PACS web, FHIR, VPN",
+  "target_roles": [
+    "gateway",
+    "web_portal",
+    "fhir_server",
+    "vendor_vpn"
+  ],
+  "affected_protocols": [
+    "HTTPS",
+    "TCP"
+  ],
+  "entry_point": "internet",
+  "target_asset": "pacs_server_01",
+  "default_intensity": 0.5,
+  "default_stealth": false,
+  "stages": [
+    {
+      "name": "port_scan",
+      "duration_frac": 0.6,
+      "description": "Short flows to many hosts/ports"
+    },
+    {
+      "name": "service_probe",
+      "duration_frac": 0.4,
+      "description": "Service identification probes"
+    }
+  ],
+  "signature_description": "Short flows to many hosts/ports, high unique_dst_ip and unique_dst_port, low bytes/flow"
+}

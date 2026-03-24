@@ -1,0 +1,27 @@
+{
+  "scenario_id": "A18",
+  "environment_profile": "medium_hospital_v1",
+  "seed": 42,
+  "duration_s": 120,
+  "window_size_s": 5,
+  "attack_start_s": 20,
+  "attack_duration_s": 60,
+  "intensity": 0.75,
+  "stealth_mode": false,
+  "entry_point": "internet",
+  "target_asset": "pacs_server_01",
+  "affected_protocols": [
+    "DICOM",
+    "HTTPS"
+  ],
+  "label_granularity": "window",
+  "output_dir": "./output",
+  "generator_version": "2.0.0",
+  "export_files": [
+    "flows.csv",
+    "windows_5s.csv",
+    "events.csv",
+    "assets.csv",
+    "scenario_manifest.json"
+  ]
+}

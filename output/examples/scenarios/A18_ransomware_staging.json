@@ -1,0 +1,39 @@
+{
+  "scenario_id": "A18",
+  "label": "ransomware_staging",
+  "attack_path": "Compromised workstation",
+  "primary_target": "File shares, AD, backup, EHR support systems",
+  "target_roles": [
+    "file_share",
+    "ad_server",
+    "backup_server",
+    "ehr_frontend"
+  ],
+  "affected_protocols": [
+    "SMB",
+    "RDP",
+    "HTTPS"
+  ],
+  "entry_point": "enterprise_it",
+  "target_asset": "file_share_01",
+  "default_intensity": 0.8,
+  "default_stealth": false,
+  "stages": [
+    {
+      "name": "smb_enum",
+      "duration_frac": 0.3,
+      "description": "SMB session spike, file-share enumeration"
+    },
+    {
+      "name": "admin_share",
+      "duration_frac": 0.3,
+      "description": "Admin share access, RDP spread"
+    },
+    {
+      "name": "staging",
+      "duration_frac": 0.4,
+      "description": "Ransomware payload staging"
+    }
+  ],
+  "signature_description": "SMB session spike, admin share access, RDP spread, file-share enumeration"
+}

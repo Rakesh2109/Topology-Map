@@ -1,0 +1,31 @@
+{
+  "scenario_id": "A22",
+  "label": "app_layer_flood",
+  "attack_path": "Internet bot / single source",
+  "primary_target": "Clinical web application",
+  "target_roles": [
+    "web_portal",
+    "ehr_frontend"
+  ],
+  "affected_protocols": [
+    "HTTPS",
+    "HTTP"
+  ],
+  "entry_point": "internet",
+  "target_asset": "web_portal_01",
+  "default_intensity": 0.9,
+  "default_stealth": false,
+  "stages": [
+    {
+      "name": "http_flood",
+      "duration_frac": 0.7,
+      "description": "High request rate, session churn"
+    },
+    {
+      "name": "error_storm",
+      "duration_frac": 0.3,
+      "description": "Many 4xx/5xx responses, CPU/latency spikes"
+    }
+  ],
+  "signature_description": "High request rate, session churn, many 4xx/5xx responses, CPU/latency proxies"
+}

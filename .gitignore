@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+.venv
+output_datasets/
+dataset/
+output/*.csv
+output/*.parquet
+Topology-Map/

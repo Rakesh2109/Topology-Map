@@ -1,0 +1,31 @@
+{
+  "scenario_id": "A23",
+  "label": "telemetry_spoofing",
+  "attack_path": "Internal MITM or device compromise",
+  "primary_target": "Telemetry aggregator / monitor",
+  "target_roles": [
+    "telemetry_aggregator",
+    "patient_monitor"
+  ],
+  "affected_protocols": [
+    "TCP",
+    "BLE"
+  ],
+  "entry_point": "iomt_subnet",
+  "target_asset": "telemetry_agg_01",
+  "default_intensity": 0.6,
+  "default_stealth": true,
+  "stages": [
+    {
+      "name": "intercept",
+      "duration_frac": 0.3,
+      "description": "Intercept telemetry stream"
+    },
+    {
+      "name": "inject_values",
+      "duration_frac": 0.7,
+      "description": "Implausible value jumps, inconsistent sender identity"
+    }
+  ],
+  "signature_description": "Normal packet rate but implausible value jumps, inconsistent sender identity, repeat values"
+}

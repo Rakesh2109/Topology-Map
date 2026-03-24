@@ -1,0 +1,30 @@
+{
+  "scenario_id": "A13",
+  "label": "dicom_discovery",
+  "attack_path": "Compromised workstation",
+  "primary_target": "PACS / archive",
+  "target_roles": [
+    "pacs_server",
+    "imaging_archive_gw"
+  ],
+  "affected_protocols": [
+    "DICOM"
+  ],
+  "entry_point": "imaging_subnet",
+  "target_asset": "pacs_server_01",
+  "default_intensity": 0.6,
+  "default_stealth": true,
+  "stages": [
+    {
+      "name": "cfind_queries",
+      "duration_frac": 0.6,
+      "description": "Spike in DICOM C-FIND queries"
+    },
+    {
+      "name": "data_fetch",
+      "duration_frac": 0.4,
+      "description": "Low initial bytes then larger fetches"
+    }
+  ],
+  "signature_description": "Spike in DICOM query/retrieve, many C-FIND-like queries, low initial bytes then larger fetches"
+}

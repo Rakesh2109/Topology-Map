@@ -1,0 +1,32 @@
+{
+  "scenario_id": "A16",
+  "label": "hl7_flood",
+  "attack_path": "Compromised clinical app",
+  "primary_target": "HL7 engine / LIS / EHR adapter",
+  "target_roles": [
+    "hl7_engine",
+    "lis",
+    "ehr_frontend"
+  ],
+  "affected_protocols": [
+    "HL7",
+    "TCP"
+  ],
+  "entry_point": "clinical_subnet",
+  "target_asset": "hl7_engine_01",
+  "default_intensity": 0.8,
+  "default_stealth": false,
+  "stages": [
+    {
+      "name": "msg_burst",
+      "duration_frac": 0.7,
+      "description": "Abnormal HL7 message count bursts"
+    },
+    {
+      "name": "error_gen",
+      "duration_frac": 0.3,
+      "description": "Parser errors and retries from non-standard sender"
+    }
+  ],
+  "signature_description": "Abnormal HL7 message count, bursts from non-standard sender, retries and parser errors"
+}

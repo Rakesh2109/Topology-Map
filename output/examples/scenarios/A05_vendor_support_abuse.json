@@ -1,0 +1,38 @@
+{
+  "scenario_id": "A05",
+  "label": "vendor_support_abuse",
+  "attack_path": "Compromised vendor path",
+  "primary_target": "Vendor jump host -> clinical zone",
+  "target_roles": [
+    "vendor_jumphost",
+    "nurse_station",
+    "device_mgmt_server"
+  ],
+  "affected_protocols": [
+    "SSH",
+    "RDP",
+    "HTTPS"
+  ],
+  "entry_point": "vendor_vpn",
+  "target_asset": "vendor_jumphost_01",
+  "default_intensity": 0.6,
+  "default_stealth": true,
+  "stages": [
+    {
+      "name": "vendor_access",
+      "duration_frac": 0.3,
+      "description": "New remote-admin session from vendor IP"
+    },
+    {
+      "name": "internal_pivot",
+      "duration_frac": 0.5,
+      "description": "Pivot from jump host into clinical zone"
+    },
+    {
+      "name": "data_access",
+      "duration_frac": 0.2,
+      "description": "Access clinical systems"
+    }
+  ],
+  "signature_description": "New remote-admin sessions, off-hours access, unusual vendor IP, sudden internal pivot"
+}

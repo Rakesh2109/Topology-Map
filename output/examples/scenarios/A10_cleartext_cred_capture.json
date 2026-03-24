@@ -1,0 +1,31 @@
+{
+  "scenario_id": "A10",
+  "label": "cleartext_cred_capture",
+  "attack_path": "Internal same subnet",
+  "primary_target": "Web portal / mobile app",
+  "target_roles": [
+    "web_portal",
+    "mobile_medical_app"
+  ],
+  "affected_protocols": [
+    "HTTP",
+    "TCP"
+  ],
+  "entry_point": "internal_subnet",
+  "target_asset": "web_portal_01",
+  "default_intensity": 0.5,
+  "default_stealth": true,
+  "stages": [
+    {
+      "name": "sniff",
+      "duration_frac": 0.4,
+      "description": "Cleartext auth exchange captured"
+    },
+    {
+      "name": "reuse",
+      "duration_frac": 0.6,
+      "description": "Successful reuse from another source"
+    }
+  ],
+  "signature_description": "First cleartext auth exchange, then successful reuse from another source; low crypto indicators"
+}

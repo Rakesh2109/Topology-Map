@@ -1,0 +1,30 @@
+{
+  "scenario_id": "A15",
+  "label": "fhir_bulk_pull",
+  "attack_path": "Compromised app token",
+  "primary_target": "FHIR server / cloud API",
+  "target_roles": [
+    "fhir_server"
+  ],
+  "affected_protocols": [
+    "HTTPS",
+    "FHIR"
+  ],
+  "entry_point": "internet",
+  "target_asset": "fhir_server_01",
+  "default_intensity": 0.6,
+  "default_stealth": true,
+  "stages": [
+    {
+      "name": "api_enum",
+      "duration_frac": 0.2,
+      "description": "Enumerate API endpoints"
+    },
+    {
+      "name": "bulk_read",
+      "duration_frac": 0.8,
+      "description": "High GET rate, anomalous volume and pagination"
+    }
+  ],
+  "signature_description": "High GET rate, high object count, mostly read-only but anomalous volume and pagination"
+}

@@ -1,0 +1,36 @@
+{
+  "scenario_id": "A20",
+  "label": "phi_exfiltration",
+  "attack_path": "Compromised server",
+  "primary_target": "Database / file share / cloud sink",
+  "target_roles": [
+    "file_share",
+    "ehr_frontend"
+  ],
+  "affected_protocols": [
+    "HTTPS",
+    "SMB"
+  ],
+  "entry_point": "enterprise_it",
+  "target_asset": "file_share_01",
+  "default_intensity": 0.7,
+  "default_stealth": false,
+  "stages": [
+    {
+      "name": "data_collect",
+      "duration_frac": 0.3,
+      "description": "Identify and stage high-value data"
+    },
+    {
+      "name": "compress",
+      "duration_frac": 0.2,
+      "description": "Compression-like byte pattern"
+    },
+    {
+      "name": "exfiltrate",
+      "duration_frac": 0.5,
+      "description": "Large outbound transfer to external destination"
+    }
+  ],
+  "signature_description": "Large outbound transfer to unusual external destination, sustained compression-like byte pattern"
+}

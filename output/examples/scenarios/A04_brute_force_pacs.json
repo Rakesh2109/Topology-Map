@@ -1,0 +1,31 @@
+{
+  "scenario_id": "A04",
+  "label": "brute_force_pacs",
+  "attack_path": "Internet",
+  "primary_target": "Imaging portal",
+  "target_roles": [
+    "pacs_server",
+    "web_portal"
+  ],
+  "affected_protocols": [
+    "HTTPS",
+    "DICOM"
+  ],
+  "entry_point": "internet",
+  "target_asset": "pacs_server_01",
+  "default_intensity": 0.8,
+  "default_stealth": false,
+  "stages": [
+    {
+      "name": "bruteforce",
+      "duration_frac": 0.9,
+      "description": "High rate repeated auth failures"
+    },
+    {
+      "name": "success_check",
+      "duration_frac": 0.1,
+      "description": "Check for successful login"
+    }
+  ],
+  "signature_description": "Higher request rate, repeated auth failures, one or two usernames targeted"
+}

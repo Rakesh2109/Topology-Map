@@ -1,0 +1,36 @@
+{
+  "scenario_id": "A08",
+  "label": "auth_bypass_imaging",
+  "attack_path": "Internet or internal",
+  "primary_target": "Synapse/medical imaging app",
+  "target_roles": [
+    "pacs_server",
+    "dicom_viewer"
+  ],
+  "affected_protocols": [
+    "HTTPS",
+    "DICOM"
+  ],
+  "entry_point": "internet",
+  "target_asset": "pacs_server_01",
+  "default_intensity": 0.6,
+  "default_stealth": false,
+  "stages": [
+    {
+      "name": "bypass_exploit",
+      "duration_frac": 0.4,
+      "description": "Privileged resource access without prior login"
+    },
+    {
+      "name": "role_escalation",
+      "duration_frac": 0.3,
+      "description": "Abnormal role escalation"
+    },
+    {
+      "name": "data_access",
+      "duration_frac": 0.3,
+      "description": "Access restricted imaging data"
+    }
+  ],
+  "signature_description": "Privileged resource access without prior login sequence, abnormal role escalation"
+}

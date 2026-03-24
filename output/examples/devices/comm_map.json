@@ -1,0 +1,251 @@
+[
+  {
+    "src_role": "ct_scanner",
+    "dst_role": "pacs_server",
+    "protocols": [
+      "DICOM"
+    ],
+    "flows_per_hour": 30
+  },
+  {
+    "src_role": "mri_scanner",
+    "dst_role": "pacs_server",
+    "protocols": [
+      "DICOM"
+    ],
+    "flows_per_hour": 20
+  },
+  {
+    "src_role": "ultrasound",
+    "dst_role": "pacs_server",
+    "protocols": [
+      "DICOM"
+    ],
+    "flows_per_hour": 25
+  },
+  {
+    "src_role": "rad_workstation",
+    "dst_role": "pacs_server",
+    "protocols": [
+      "DICOM",
+      "HTTPS"
+    ],
+    "flows_per_hour": 60
+  },
+  {
+    "src_role": "rad_workstation",
+    "dst_role": "dicom_viewer",
+    "protocols": [
+      "DICOM"
+    ],
+    "flows_per_hour": 40
+  },
+  {
+    "src_role": "dicom_viewer",
+    "dst_role": "imaging_archive_gw",
+    "protocols": [
+      "DICOM"
+    ],
+    "flows_per_hour": 20
+  },
+  {
+    "src_role": "pacs_server",
+    "dst_role": "imaging_archive_gw",
+    "protocols": [
+      "DICOM"
+    ],
+    "flows_per_hour": 15
+  },
+  {
+    "src_role": "nurse_station",
+    "dst_role": "ehr_frontend",
+    "protocols": [
+      "HTTPS"
+    ],
+    "flows_per_hour": 120
+  },
+  {
+    "src_role": "nurse_station",
+    "dst_role": "pacs_server",
+    "protocols": [
+      "HTTPS"
+    ],
+    "flows_per_hour": 20
+  },
+  {
+    "src_role": "ehr_frontend",
+    "dst_role": "fhir_server",
+    "protocols": [
+      "HTTPS",
+      "FHIR"
+    ],
+    "flows_per_hour": 80
+  },
+  {
+    "src_role": "ehr_frontend",
+    "dst_role": "hl7_engine",
+    "protocols": [
+      "HL7"
+    ],
+    "flows_per_hour": 60
+  },
+  {
+    "src_role": "hl7_engine",
+    "dst_role": "lis",
+    "protocols": [
+      "HL7"
+    ],
+    "flows_per_hour": 40
+  },
+  {
+    "src_role": "hl7_engine",
+    "dst_role": "ris",
+    "protocols": [
+      "HL7"
+    ],
+    "flows_per_hour": 30
+  },
+  {
+    "src_role": "fhir_server",
+    "dst_role": "ehr_frontend",
+    "protocols": [
+      "HTTPS"
+    ],
+    "flows_per_hour": 50
+  },
+  {
+    "src_role": "patient_monitor",
+    "dst_role": "telemetry_aggregator",
+    "protocols": [
+      "TCP",
+      "BLE"
+    ],
+    "flows_per_hour": 300
+  },
+  {
+    "src_role": "wearable",
+    "dst_role": "ble_gateway",
+    "protocols": [
+      "BLE"
+    ],
+    "flows_per_hour": 200
+  },
+  {
+    "src_role": "ble_gateway",
+    "dst_role": "telemetry_aggregator",
+    "protocols": [
+      "TCP"
+    ],
+    "flows_per_hour": 180
+  },
+  {
+    "src_role": "infusion_pump",
+    "dst_role": "nurse_station",
+    "protocols": [
+      "TCP"
+    ],
+    "flows_per_hour": 50
+  },
+  {
+    "src_role": "ventilator",
+    "dst_role": "telemetry_aggregator",
+    "protocols": [
+      "TCP"
+    ],
+    "flows_per_hour": 100
+  },
+  {
+    "src_role": "nurse_station",
+    "dst_role": "ad_server",
+    "protocols": [
+      "LDAP",
+      "Kerberos"
+    ],
+    "flows_per_hour": 30
+  },
+  {
+    "src_role": "ehr_frontend",
+    "dst_role": "ad_server",
+    "protocols": [
+      "LDAP",
+      "Kerberos"
+    ],
+    "flows_per_hour": 20
+  },
+  {
+    "src_role": "file_share",
+    "dst_role": "ad_server",
+    "protocols": [
+      "SMB"
+    ],
+    "flows_per_hour": 10
+  },
+  {
+    "src_role": "backup_server",
+    "dst_role": "file_share",
+    "protocols": [
+      "SMB"
+    ],
+    "flows_per_hour": 8
+  },
+  {
+    "src_role": "soc_collector",
+    "dst_role": "pacs_server",
+    "protocols": [
+      "Syslog"
+    ],
+    "flows_per_hour": 15
+  },
+  {
+    "src_role": "device_mgmt_server",
+    "dst_role": "patient_monitor",
+    "protocols": [
+      "HTTPS",
+      "SNMP"
+    ],
+    "flows_per_hour": 20
+  },
+  {
+    "src_role": "device_mgmt_server",
+    "dst_role": "infusion_pump",
+    "protocols": [
+      "HTTPS",
+      "SNMP"
+    ],
+    "flows_per_hour": 15
+  },
+  {
+    "src_role": "device_mgmt_server",
+    "dst_role": "ventilator",
+    "protocols": [
+      "HTTPS",
+      "SNMP"
+    ],
+    "flows_per_hour": 10
+  },
+  {
+    "src_role": "vendor_jumphost",
+    "dst_role": "device_mgmt_server",
+    "protocols": [
+      "SSH",
+      "RDP"
+    ],
+    "flows_per_hour": 2
+  },
+  {
+    "src_role": "gateway",
+    "dst_role": "web_portal",
+    "protocols": [
+      "HTTPS"
+    ],
+    "flows_per_hour": 100
+  },
+  {
+    "src_role": "gateway",
+    "dst_role": "fhir_server",
+    "protocols": [
+      "HTTPS"
+    ],
+    "flows_per_hour": 40
+  }
+]

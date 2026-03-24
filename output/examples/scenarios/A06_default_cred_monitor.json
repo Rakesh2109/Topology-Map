@@ -1,0 +1,35 @@
+{
+  "scenario_id": "A06",
+  "label": "default_cred_monitor",
+  "attack_path": "Internal / physical foothold",
+  "primary_target": "Patient monitor / bedside device",
+  "target_roles": [
+    "patient_monitor"
+  ],
+  "affected_protocols": [
+    "TCP",
+    "HTTPS"
+  ],
+  "entry_point": "iomt_subnet",
+  "target_asset": "patient_mon_01",
+  "default_intensity": 0.5,
+  "default_stealth": true,
+  "stages": [
+    {
+      "name": "login_attempt",
+      "duration_frac": 0.2,
+      "description": "Minimal login attempts with default credentials"
+    },
+    {
+      "name": "admin_session",
+      "duration_frac": 0.5,
+      "description": "Successful admin session established"
+    },
+    {
+      "name": "device_query",
+      "duration_frac": 0.3,
+      "description": "Device management queries follow"
+    }
+  ],
+  "signature_description": "Immediate successful admin session after minimal attempts; device management queries follow"
+}

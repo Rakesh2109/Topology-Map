@@ -1,0 +1,31 @@
+{
+  "scenario_id": "A02",
+  "label": "service_enumeration",
+  "attack_path": "Internet",
+  "primary_target": "PACS, Synapse, web portals",
+  "target_roles": [
+    "pacs_server",
+    "web_portal"
+  ],
+  "affected_protocols": [
+    "HTTPS",
+    "HTTP"
+  ],
+  "entry_point": "internet",
+  "target_asset": "web_portal_01",
+  "default_intensity": 0.6,
+  "default_stealth": false,
+  "stages": [
+    {
+      "name": "path_discovery",
+      "duration_frac": 0.5,
+      "description": "HTTP requests across admin paths"
+    },
+    {
+      "name": "service_fingerprint",
+      "duration_frac": 0.5,
+      "description": "Moderate request bursts to identified services"
+    }
+  ],
+  "signature_description": "Repeated HTTP(S) hits across admin paths, moderate request bursts, small responses"
+}

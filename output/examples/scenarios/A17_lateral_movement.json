@@ -1,0 +1,38 @@
+{
+  "scenario_id": "A17",
+  "label": "lateral_movement",
+  "attack_path": "Compromised IT endpoint",
+  "primary_target": "Enterprise -> PACS / nurse station / IoMT",
+  "target_roles": [
+    "pacs_server",
+    "nurse_station",
+    "patient_monitor"
+  ],
+  "affected_protocols": [
+    "SMB",
+    "RDP",
+    "HTTPS"
+  ],
+  "entry_point": "enterprise_it",
+  "target_asset": "nurse_station_01",
+  "default_intensity": 0.6,
+  "default_stealth": true,
+  "stages": [
+    {
+      "name": "path_probe",
+      "duration_frac": 0.3,
+      "description": "Rare path activation, scan clinical assets"
+    },
+    {
+      "name": "smb_rdp_connect",
+      "duration_frac": 0.5,
+      "description": "SMB/RDP/HTTPS to clinical assets"
+    },
+    {
+      "name": "establish_presence",
+      "duration_frac": 0.2,
+      "description": "Establish persistent access"
+    }
+  ],
+  "signature_description": "Rare path activation, sudden SMB/RDP/HTTPS to clinical assets, unique_dst_ip rises"
+}
