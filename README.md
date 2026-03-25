@@ -1,126 +1,172 @@
-# 🏥 IoMT Medical NIDS Simulator
+# 🏥 IoMT Medical NIDS Simulator (v3.0)
 
 **A Production-Grade, Time-Series Network Intrusion Detection Dataset Generator for Healthcare IoT (IoMT) Environments.**
 
 ## 📌 Overview
-The **IoMT Medical NIDS Simulator** is an advanced event-driven behavioral simulation engine explicitly designed for Academic Research and Machine Learning (ML) model training. It overcomes the limitations of older static datasets (like NSL-KDD or CICIDS2017) by dynamically generating **highly realistic, flow-level network traffic** spanning multiple days of "hospital business hours," incorporating complex multi-stage Cyber Kill Chains (MITRE ATT&CK).
+The **IoMT Medical NIDS Simulator** is an advanced event-driven behavioral simulation engine designed for Academic Research and Machine Learning (ML) model training. It overcomes the limitations of older static datasets (like NSL-KDD or CICIDS2017) by dynamically generating **highly realistic, flow-level network traffic** spanning multiple days of "hospital business hours," incorporating complex multi-stage Cyber Kill Chains (MITRE ATT&CK).
 
 Every generated dataset outputs raw Flow Metadata (`Source IP, Dest IP, Port, Protocol, Packets, Bytes, Duration, TCP Flags`) without mathematical aggregation, perfectly mirroring real-world NetFlow or Zeek firewall outputs.
 
 ## 🚀 Key Features
-- **Deterministic Chronological Splitting:** Automatically generates strict `train.csv` (80%) and `test.csv` (20%) datasets without random shuffling to preserve temporal dependencies and zero-day realism for ML models.
-- **24 Built-In Attack Scenarios:** Simulates APTs, Ransomware, Botnets, and Insider Threats targeting critical infrastructure (CT Scanners, MRI, Patient Monitors, PACS).
-- **Interactive Web Dashboard:** A beautiful Glassmorphism GUI to control simulations, run the dataset generator, and construct attacks.
-- **Dynamic Scenario Builder:** A graphical Form-Based UI allowing users to visually construct new multi-stage cyber-attacks (Recon → Exploit → Exfil) and instantly register them into the engine.
-- **Topological Physics Graph:** An interactive `vis.js` visualization of the 38 hospital assets segmented across 6 strict security zones (Internet, Enterprise IT, Clinical Core, Imaging, IoMT Subnet, Vendor Area).
+- **Deterministic Chronological Splitting:** Generates strict `train.csv` (80%) and `test.csv` (20%) without random shuffling to preserve temporal dependencies.
+- **24 Built-In Attack Scenarios (A01–A24):** Simulates APTs, Ransomware, Botnets, BLE Replay, DICOM Exfiltration, HL7 Floods, and Insider Threats targeting critical infrastructure.
+- **38 Hospital Devices Across 6 Zones:** CT Scanners, MRI, Patient Monitors, Infusion Pumps, Ventilators, PACS, FHIR, HL7 Engine, and more.
+- **Interactive Web Dashboard:** Glassmorphism GUI to control simulations, run the dataset generator, and construct attacks.
+- **Dynamic Scenario Builder:** Graphical Form-Based UI for constructing new multi-stage cyber-attacks visually.
+- **Interactive Topology Graph:** `vis.js` visualization of the 38 hospital assets segmented across 6 strict security zones.
+- **Physical Docker Attack Detonation:** 7 selectable real attack modules executed inside Docker containers with live PCAP capture.
+- **Streaming CSV Output:** Memory-efficient incremental disk writes for long simulations.
 
 ## 🛠️ Architecture & Technologies
-- **Backend:** Pure Python 3 (Zero heavy dependencies) using multithreaded simulation queuing.
+- **Backend:** Pure Python 3 (Zero heavy dependencies) with streaming CSV output.
 - **Frontend Dashboard:** HTML5, CSS3, Vanilla ES6 JavaScript (No React/NPM required).
-- **Visualization:** HTML5 Canvas, Server-Sent Events (SSE) for Live Streaming, `vis.js` for Interactive Topology.
+- **Visualization:** HTML5 Canvas, Server-Sent Events (SSE), `vis.js` for Interactive Topology.
+- **Docker Mode:** Alpine Linux containers on isolated Docker bridge networks.
+
+---
 
 ## 🌍 Two Worlds of Simulation
-This framework offers two distinct modes depending on your research needs: The Mathematical Engine (for ultra-fast Big Data generation) and Docker Orchestration (for physical Layer-2 experimentation).
 
-### World 1: The Mathematical Engine (Big Data ML Generation)
+This framework offers two distinct modes depending on your research needs:
+
+### World 1: Mathematical Engine (Big Data ML Generation)
 *Generates millions of deterministic time-series flows in seconds.*
-![Interactive Vis.js Hospital Network Topology](/Users/rakeshry/.gemini/antigravity/brain/a8affb7d-6aa2-419a-8658-cd92e7a237da/hospital_topology_final_1774316577413.png)
+- Pure mathematical state machines — no real networking
+- 24 attack scenarios with IP rotation, organic variability, and multi-stage progression
+- Diurnal traffic patterns, infrastructure noise, and maintenance events
+- Outputs: `train.csv`, `test.csv`, `full_dataset.csv`, `dataset_info.json`
 
 ### World 2: Docker Orchestration (Physical Layer Emulation)
-*Spins up the topology as 38 real Alpine Linux containers on isolated Docker bridge networks.*
-```mermaid
-graph TD
-    subgraph "Zone A: Internet Edge (10.0.0.0/24)"
-        A1[Main FW] --- A2[Internet GW]
-        A2 --- hacker[External APT 💀]
-    end
-    subgraph "Zone B: Enterprise IT (10.0.1.0/24)"
-        B1[AD Server] --- B2[IT PC]
-    end
-    subgraph "Zone C: Clinical Core (10.0.2.0/24)"
-        C1[EHR Frontend] --- C2[PACS Server]
-    end
-    subgraph "Zone E: IoMT Subnet (10.0.4.0/24)"
-        E1[Patient Monitor] --- E2[Ventilator]
-    end
-    
-    A1 <-->|Docker Route| B1
-    B1 <-->|Docker Route| C1
-    C1 <-->|Docker Route| E1
+*Deploys the topology as 38 real Alpine Linux containers on isolated Docker bridge networks.*
+- 6 isolated subnets (Internet Edge, Enterprise IT, Clinical Core, Imaging, IoMT, Third-Party)
+- 7 selectable physical attack modules with real NMAP, hping3, and tcpdump
+- Gateway/Firewall containers with `NET_ADMIN` capabilities and IP forwarding
+- Outputs: `.pcap` files containing real OS-level payload bytes
+
 ```
+Zone A: Internet Edge (10.0.0.0/24) ── FW ── GW ── External APT 💀
+Zone B: Enterprise IT  (10.0.1.0/24) ── AD, DNS, DHCP, EHR, File Share, Backup, SOC
+Zone C: Clinical Core  (10.0.2.0/24) ── PACS, FHIR, HL7, Nurse Stations, Device Mgmt
+Zone D: Imaging Subnet (10.0.3.0/24) ── CT Scanner, MRI, Ultrasound, Radiology WS
+Zone E: IoMT Subnet    (10.0.4.0/24) ── Patient Monitors, Infusion Pumps, Ventilators, Wearables
+Zone F: Third-Party    (10.0.5.0/24) ── Vendor VPN, Jump Host
+```
+
+---
 
 ## 💻 Plug & Play Execution
 
-### 1. Generate the Raw ML Dataset (Mathematical Mode)
-Bypass the GUI and instantly compile a `train.csv` (80%) and `test.csv` (20%) tracking all 24 attack types over 7-days:
+### Step 1: Generate the Raw ML Dataset (World 1)
+Compile a `train.csv` (80%) and `test.csv` (20%) tracking all 24 attack types:
 ```bash
 python main.py --generate-dataset --output ./output_datasets/
 ```
 
-### 2. Start the Interactive Web Dashboard
-Explore the Live Engine, view the Topology, or build Custom Scenarios visually:
+### Step 2: Start the Interactive Web Dashboard
+Explore the Live Engine, view the Topology, or build Custom Scenarios:
 ```bash
 python main.py --web --port 8080
 ```
 *Then open `http://localhost:8080` in your browser.*
 
-### 3. Build & Run the Physical Docker Subnets (Docker Mode)
-Create a real physical testing environment using Linux containers:
+### Step 3: Build the Physical Docker Hospital (World 2)
+Create a real physical testing environment with 38 containers:
 ```bash
 python scripts/docker_orchestrator.py --topology configs/devices/medium_hospital.json
 docker-compose -f docker-compose-hospital.yml up -d
 ```
 
-### 4. Physical Cyber Attack Detonation (World 2 Automator)
-Once your Docker containers are actively running, physically unleash cyber-attacks across the internal subnets. This script logs into the external APT container, installs hacking tools, and automatically captures the physical network traffic (`tcpdump`) bridging the router:
-```bash
-python scripts/docker_attacker.py --attack all
-```
-*Creates `output_datasets/physical_attack_sample.pcap` containing real payload traffic generated by the Alpine Linux OS!*
+### Step 4: Physical Cyber Attack Detonation (World 2)
+Once Docker containers are running, physically unleash cyber-attacks. The script installs hacking tools, captures traffic via `tcpdump` on the router, and extracts a `.pcap`:
 
-### 5. Synthesize Deep Packet PCAPs (World 1)
-Convert the generated Flow CSV back into real `.pcap` files for deep payload inspection:
+```bash
+# Execute ALL 7 attack modules (full kill-chain)
+python scripts/docker_attacker.py --attack all
+
+# Select specific modules (comma-separated)
+python scripts/docker_attacker.py --attack recon,dos,brute_force
+
+# Interactive selection menu
+python scripts/docker_attacker.py --attack menu
+```
+
+**Available Attack Modules:**
+| Module | Maps To | Description |
+|--------|---------|-------------|
+| `recon` | A01 | Aggressive NMAP port/service sweep across IT & Clinical zones |
+| `dos` | A21 | SYN Flood (hping3) against the PACS imaging server |
+| `brute_force` | A04 | SSH/HTTPS brute-force against AD Server & EHR Frontend |
+| `lateral` | A17 | East-west pivot from IT zone into Clinical/Imaging/IoMT |
+| `exfil` | A14/A20 | Simulated PHI data exfiltration across zones |
+| `hl7_flood` | A16 | HL7 ADT message flood against clinical engine port 2575 |
+| `ble_replay` | A11 | BLE telemetry replay attack against IoMT aggregator |
+
+*Output: `output_datasets/physical_attack_sample.pcap` containing real payload traffic.*
+
+### Step 5: Synthesize PCAPs from CSV (World 1 → PCAP)
+Convert generated Flow CSV into `.pcap` files for deep packet inspection:
 ```bash
 pip install scapy
 python scripts/pcap_exporter.py --input output_datasets/train.csv --output my_dataset.pcap
 ```
 
-### 4. Docker Orchestration (Physical Layer Emulation)
-To overcome the physical abstraction limit of standard simulators, we provide a dynamic Docker Orchestrator. This script reads your JSON Topology and synthesizes a full `docker-compose.yml` where every single hospital asset is an isolated Alpine Linux container, and every Zone is a strictly isolated Docker Bridge Network with routing enabled across the Firewall gateways.
-```bash
-python docker_orchestrator.py --topology output/examples/devices/medium_hospital.json
-docker-compose -f docker-compose-hospital.yml up -d
+---
+
+## 📂 Project Structure
+```
+iotm_data/
+├── config.py                  # 🧠 Brain: 6 Zones, 38 Devices, 24 Attacks, CommMap
+├── network_model.py           # 🏗️ Hospital network graph builder
+├── traffic_generator.py       # 🚗 Benign traffic with diurnal patterns
+├── attack_injector.py         # 💀 24 attack state machines with IP rotation
+├── labeling_engine.py         # 🏷️ Per-flow labeling with transition windows
+├── time_window.py             # 📊 5-second aggregate feature windows (28+ features)
+├── dataset_builder.py         # 📦 Streaming dataset builder (train/test split)
+├── main.py                    # 🚀 CLI entry point
+├── gui_web.py                 # 🌐 Web dashboard backend (SSE server)
+├── scripts/
+│   ├── docker_orchestrator.py # 🐳 JSON topology → docker-compose.yml
+│   ├── docker_attacker.py     # 💣 7 selectable physical attack modules
+│   └── pcap_exporter.py       # 📡 CSV → .pcap conversion (Scapy)
+├── configs/devices/           # Hospital topology JSONs
+├── docs/
+│   ├── IoMT_NIDS_Complete_Guide.md  # 📖 Complete learning guide (Basic → Advanced)
+│   └── visualizations/        # Interactive HTML topology diagrams
+└── static/                    # Web dashboard frontend
 ```
 
-### 5. PCAP Synthesis (Deep Packet Inspection)
-While the core engine generates ultra-fast Flow-level ML datasets (CSV/Parquet), if your research requires Deep Packet Inspection (DPI) on raw binary payloads, you can convert the flow output directly into `.pcap` format.
-```bash
-pip install scapy
-python pcap_exporter.py --input test_dataset/train.csv --output my_malware_dataset.pcap
-```
+---
 
+## 📖 Documentation
 
-## Architecture & Topology 
+For a comprehensive learning guide covering everything from basics to advanced concepts, see:
 
-IoMT Simulator operates a **"Two Worlds"** paradigm to bridge the gap between Big Data mathematics for ML generation, and physical OS emulation for real-world academic research. 
+**[`docs/IoMT_NIDS_Complete_Guide.md`](docs/IoMT_NIDS_Complete_Guide.md)**
 
-*   **World 1 (Mathematical Flow Engine)**: Capable of tracking 10,000+ assets with microsecond temporal accuracy directly into `.csv` formats, leveraging the Tsetlin Machine and FuzzTM mathematical paradigms.
-*   **World 2 (Docker Orchestration)**: A complete physical Layer-2 translation. It converts the abstract configuration into an identical containerized testbed array (matching the presentation formats seen in prominent references like the **UNB CIC IoT Dataset 2023**), wiring 38 separate Alpine Linux containers to explicitly segregated Docker Bridge Subnet routing tables.
+This guide covers:
+- All 38 devices — purpose, function, and clinical role
+- All 24 attack scenarios — step-by-step kill-chain explanations
+- 6-zone hospital routing architecture with router types
+- Code architecture walkthrough (file-by-file)
+- 15 known drawbacks with mitigation strategies
+- Academic references with DOI links
 
-### Topology Diagram Visualizations
-Both modes feature their own fully interactive HTML Visualizers (`docs/visualizations/`) offering perfect, academic-grade structural mapping of the routing paths.
-## 📚 Academic References & Reading
-The "Two Worlds" architecture of this simulator is firmly based on modern cybersecurity research methodologies. If you are researching Machine Learning for IoT Security, consider these foundational papers establishing the validity of both approaches:
+---
+
+## 📚 Academic References
 
 **Foundations of World 1 (Mathematical Flow Generation):**
-1. **Ring et al. (2019)** - *A Survey of Network-based Intrusion Detection Data Sets* (Comput. Secur.) - Validates the supremacy of synthesized Flow-metadata datasets over raw PCAP for modern ML scale training.
-2. **Shiravi et al. (2012)** - *Toward developing a systematic approach to generate benchmark datasets for intrusion detection* - Establishes the probabilistic, state-machine "Profile" generation methodology used in our engine, exposing the flaws of legacy datasets like NSL-KDD.
+1. **Ring et al. (2019)** — *A Survey of Network-based Intrusion Detection Data Sets* (Comput. Secur.) — Validates synthesized flow-metadata datasets for modern ML training.
+2. **Shiravi et al. (2012)** — *Toward Developing a Systematic Approach to Generate Benchmark Datasets for Intrusion Detection* — Establishes the probabilistic state-machine generation methodology.
 
 **Foundations of World 2 (Docker Orchestration):**
-3. **Vidal et al. (2020)** - *Building an IoT-Aware Cyber Range with Docker* - Validates the use of isolated Docker Bridge networks and lightweight containers for deterministic Cyber-Physical System emulation.
-4. **Alotaibi & Hussein (2022)** - *A Docker-based Architecture for Emulating Cyber-Physical Systems* - Demonstrates how physical SDN and Docker routing are the gold standard for testing multi-stage kill chains.
+3. **Neto et al. (2023)** — *CICIoT2023: A Real-Time Dataset and Benchmark for Large-Scale Attacks in IoT Environment* — [UNB CIC IoT Dataset 2023](https://www.unb.ca/cic/datasets/iotdataset-2023.html)
+4. **Vidal et al. (2020)** — *Building an IoT-Aware Cyber Range with Docker* — Validates Docker bridge networks for CPS emulation.
 
+**Tsetlin Machine & Low-Power ML:**
+5. **Granmo, O.-C. (2018)** — *The Tsetlin Machine* — [arXiv:1804.01508](https://arxiv.org/abs/1804.01508)
 
+---
 
 ## 📝 License
 MIT License. Free for academic and research use.
