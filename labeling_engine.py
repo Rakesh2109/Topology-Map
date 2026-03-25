@@ -5,7 +5,13 @@ Per-flow and per-window label assignment with:
 - Complete event extraction for ALL 24 scenarios
 """
 
-from typing import List, Dict, Optional
+import sys
+import os
+from typing import List, Dict, Optional, Any
+
+# Ensure project root is on sys.path for Pyre2 compatibility
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from config import SimConfig, ATTACK_SCENARIOS
 
 

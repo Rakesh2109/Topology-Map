@@ -174,8 +174,9 @@ class DatasetBuilder:
                 "label": scenario.label,
             })
 
-        # Generate flows time-step by time-step
-        all_flows = []
+        # Generate flows time-step by time-step — STREAMING to temp file
+        temp_path = os.path.join(self.output_dir, "_temp_full.csv")
+        total_flow_count = 0
         step_size = self.window_size_s
         total_steps = self.total_duration // step_size
         start_time = time.time()
@@ -189,7 +190,13 @@ class DatasetBuilder:
         print(f"  Train/Test:   {self.train_ratio*100:.0f}% / {(1-self.train_ratio)*100:.0f}%")
         print(f"  Split at:     t={train_split_t}s")
         print(f"  Output:       {self.output_dir}")
+        print(f"  Mode:         Streaming (low-memory)")
         print(f"{'='*60}\n")
+
+        # Open streaming temp file for incremental writes
+        temp_file = open(temp_path, "w", newline="")
+        csv_writer = csv.DictWriter(temp_file, fieldnames=RAW_COLUMNS, extrasaction="ignore")
+        csv_writer.writeheader()
 
         for step in range(total_steps):
             t_start = step * step_size
@@ -221,12 +228,17 @@ class DatasetBuilder:
                     f["attack_type"] = f.get("label", "")
                     f.setdefault("scenario_id", "")
 
-            all_flows.extend(chunk)
+            # Sort this chunk by timestamp and stream to disk
+            chunk.sort(key=lambda f: f.get("ts_start", 0))
+            for flow in chunk:
+                row = {col: flow.get(col, "") for col in RAW_COLUMNS}
+                csv_writer.writerow(row)
+            total_flow_count += len(chunk)
 
             # Progress
             pct = (step + 1) / total_steps
             if progress_callback:
-                progress_callback(pct, step + 1, total_steps, len(all_flows))
+                progress_callback(pct, step + 1, total_steps, total_flow_count)
             elif step % max(1, total_steps // 20) == 0:
                 benign_n = len(benign)
                 attack_n = len(attack)
@@ -237,21 +249,34 @@ class DatasetBuilder:
                       f"flows: {len(chunk):4d} (B={benign_n}, A={attack_n}) "
                       f"active: {active_str}")
 
-        # Sort all flows by timestamp
-        all_flows.sort(key=lambda f: f.get("ts_start", 0))
+        temp_file.close()
+        print(f"\n  ✓ Streaming complete: {total_flow_count:,} flows → {temp_path}")
 
-        # Split chronologically
-        train_flows = [f for f in all_flows if f.get("ts_start", 0) < train_split_t]
-        test_flows = [f for f in all_flows if f.get("ts_start", 0) >= train_split_t]
-
-        # Write CSVs
+        # Split from disk into train/test (memory-efficient)
         train_path = os.path.join(self.output_dir, "train.csv")
         test_path = os.path.join(self.output_dir, "test.csv")
         full_path = os.path.join(self.output_dir, "full_dataset.csv")
 
+        all_flows = []
+        with open(temp_path, "r") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                all_flows.append(row)
+
+        # Sort all flows by timestamp for proper chronological ordering
+        all_flows.sort(key=lambda f: float(f.get("ts_start", 0)))
+
+        # Split chronologically
+        train_flows = [f for f in all_flows if float(f.get("ts_start", 0)) < train_split_t]
+        test_flows = [f for f in all_flows if float(f.get("ts_start", 0)) >= train_split_t]
+
+        # Write final CSVs
         self._write_csv(train_flows, train_path)
         self._write_csv(test_flows, test_path)
         self._write_csv(all_flows, full_path)
+
+        # Clean up temp file
+        os.remove(temp_path)
 
         # Compute stats
         stats = self._compute_stats(all_flows, train_flows, test_flows, slots)
