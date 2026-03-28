@@ -502,6 +502,88 @@ _register(AttackScenario(
     "Bursts of write/config operations, small request payloads, subsequent device behavior drift"
 ))
 
+# ─── CVE-Informed 2024-2025 Real-World Attack Scenarios ───────────────────────
+
+# A25 — ALPHV/BlackCat-style Healthcare Ransomware (inspired by Change Healthcare Feb 2024)
+# CVE ref: Exploits stolen Citrix creds (CVE-2019-19781 family), no MFA
+_register(AttackScenario(
+    "A25", "alphv_healthcare_ransomware",
+    "Compromised Citrix/VPN endpoint (no MFA)",
+    "EHR, file shares, backup, AD — full domain compromise prior to encryption",
+    [DeviceRole.GATEWAY, DeviceRole.AD_SERVER, DeviceRole.FILE_SHARE,
+     DeviceRole.BACKUP_SERVER, DeviceRole.EHR_FRONTEND],
+    ["HTTPS", "SMB", "RDP", "VPN"],
+    "internet",
+    "gw_edge_01",
+    0.9, False,
+    [AttackStage("vpn_initial_access", 0.1,
+                 "Stolen Citrix credential used; no MFA check; new VPN session off-hours"),
+     AttackStage("domain_recon", 0.15,
+                 "Rapid LDAP/AD enumeration; BloodHound-style query pattern; high unique_dst_ip"),
+     AttackStage("lateral_rdp_smb", 0.2,
+                 "RDP/SMB lateral movement to backup, file-share, EHR servers"),
+     AttackStage("backup_deletion", 0.15,
+                 "Backup server API calls; shadow copy deletion; backup traffic drops to zero"),
+     AttackStage("data_exfiltration", 0.2,
+                 "Large outbound data to external C2; sustained compression-like byte stream"),
+     AttackStage("ransomware_deploy", 0.2,
+                 "SMB write volume spikes; file-share flows saturate; services go silent")],
+    "CVE-2019-19781 / stolen Citrix creds → AD takeover → backup wipe → PHI exfil → encryption. "
+    "Indicators: off-hours VPN, rapid AD LDAP enum, RDP spread, backup silence, large outbound burst."
+))
+
+# A26 — Log4Shell Exploitation in Clinical Middleware (CVE-2021-44228)
+# Still present in unpatched Java-based FHIR/HL7 gateways as of 2024
+_register(AttackScenario(
+    "A26", "log4shell_clinical_rce",
+    "Internet → FHIR / HL7 Java middleware (unpatched Log4j)",
+    "FHIR server, HL7 engine, clinical middleware",
+    [DeviceRole.FHIR_SERVER, DeviceRole.HL7_ENGINE, DeviceRole.EHR_FRONTEND],
+    ["HTTPS", "FHIR", "HL7", "TCP"],
+    "internet",
+    "fhir_server_01",
+    0.7, True,
+    [AttackStage("jndi_probe", 0.15,
+                 "Single crafted HTTPS request with JNDI payload in User-Agent/X-Api-Version header"),
+     AttackStage("ldap_callback", 0.1,
+                 "Outbound LDAP/RMI connection from server to attacker C2 (new external peer)"),
+     AttackStage("rce_establish", 0.2,
+                 "Reverse shell established; low-volume persistent TCP session to external IP"),
+     AttackStage("internal_recon", 0.25,
+                 "Internal subnet scanning from FHIR host; rare source IP for east-west flows"),
+     AttackStage("ehr_data_access", 0.3,
+                 "Bulk FHIR API reads; patient record enumeration; high GET rate anomaly")],
+    "CVE-2021-44228 Log4Shell → RCE on Java-based FHIR/HL7 server → internal pivot → bulk PHI read. "
+    "Indicators: single external HTTP probe, outbound LDAP callback, new reverse-TCP session, bulk FHIR GET."
+))
+
+# A27 — MQTT Telemetry Hijack on IoMT Subnet (2024/2025 IoT CVE pattern)
+# Targets unencrypted MQTT brokers on patient monitors + infusion pumps
+# Related: CVE-2023-28369 (Eclipse Mosquitto), unauth MQTT brokers in medical subnets
+_register(AttackScenario(
+    "A27", "mqtt_iomt_hijack",
+    "Internal foothold or rogue Wi-Fi device",
+    "MQTT broker / telemetry aggregator / patient monitors / infusion pumps",
+    [DeviceRole.TELEMETRY_AGGREGATOR, DeviceRole.PATIENT_MONITOR,
+     DeviceRole.INFUSION_PUMP, DeviceRole.BLE_GATEWAY],
+    ["TCP", "BLE", "HTTPS"],
+    "iomt_subnet",
+    "telemetry_agg_01",
+    0.65, True,
+    [AttackStage("broker_discovery", 0.1,
+                 "Port 1883/8883 scan across IoMT subnet; unauthenticated MQTT connect attempt"),
+     AttackStage("topic_subscribe", 0.2,
+                 "Wildcard MQTT subscribe (#) to harvest all vitals and device commands"),
+     AttackStage("telemetry_intercept", 0.3,
+                 "Passive data capture; low packet volume; repeated telemetry seen on new source"),
+     AttackStage("command_inject", 0.25,
+                 "MQTT PUBLISH to device control topics; infusion pump/alarm config tampering"),
+     AttackStage("persistence", 0.15,
+                 "Retain flag set on malicious topic; persists across broker restarts")],
+    "Unauth MQTT (CVE-2023-28369 class) → wildcard subscribe → vital intercept → command inject to pumps/monitors. "
+    "Indicators: port-1883 scan, new subscriber on all topics, implausible vitals, device command anomalies."
+))
+
 
 # ──────────────────────────────────────────────────────────────────────
 # Field Schemas

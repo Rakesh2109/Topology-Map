@@ -19,6 +19,8 @@ from network_model import HospitalNetwork
 from traffic_generator import BenignTrafficGenerator
 from attack_injector import AttackStateMachine
 from labeling_engine import LabelingEngine
+from device_profiler import DeviceProfiler, build_static_baseline_profiles
+from data_tamer import DataTamer
 
 
 # Raw flow columns — no feature extraction
@@ -66,6 +68,10 @@ class DatasetBuilder:
         self.custom_devices = custom_devices
         self.train_ratio = train_ratio
         self.window_size_s = window_size_s
+        self.enable_profiling: bool = True     # device profiling
+        self.enable_taming: bool = True        # data taming / normalization
+        self.taming_strategy: str = "robust"   # minmax | standard | robust
+        self.taming_balance: str = "undersample"  # none | undersample | oversample | hybrid
 
     def _plan_attack_slots(self) -> List[dict]:
         """
@@ -296,6 +302,70 @@ class DatasetBuilder:
             "full_path": full_path,
             "stats": stats,
         }
+
+    # ──────────────────────────────────────────────────────────────────
+    # Device Profiling
+    # ──────────────────────────────────────────────────────────────────
+
+    def run_device_profiling(
+        self, flows: List[dict], output_dir: str
+    ) -> DeviceProfiler:
+        """
+        Fit DeviceProfiler on benign flows from the full dataset.
+        Saves profiles JSON and returns the fitted profiler.
+        """
+        print("\n  [Device Profiler] Building per-role behavioral baselines...")
+        benign_flows = [f for f in flows if f.get("label") == "benign"]
+
+        if len(benign_flows) < 50:
+            print("  [Device Profiler] Not enough benign flows — using static baselines.")
+            profiler = build_static_baseline_profiles()
+        else:
+            profiler = DeviceProfiler()
+            profiler.fit(benign_flows)
+
+        # Save profiles
+        profiles_path = os.path.join(output_dir, "device_profiles.json")
+        profiler.save(profiles_path)
+        print(profiler.summary())
+        return profiler
+
+    # ──────────────────────────────────────────────────────────────────
+    # Data Taming
+    # ──────────────────────────────────────────────────────────────────
+
+    def run_data_taming(
+        self,
+        flows: List[dict],
+        output_dir: str,
+        split: str = "train",
+    ) -> List[dict]:
+        """
+        Apply data taming pipeline to a flow/window dataset.
+        Writes tamed_{split}.csv and tamer_config_{split}.json.
+        Returns tamed records.
+        """
+        if not flows:
+            return []
+        print(f"\n  [Data Tamer] Taming {split} dataset "
+              f"({len(flows):,} records, strategy={self.taming_strategy}, "
+              f"balance={self.taming_balance})...")
+        tamer = DataTamer(
+            strategy=self.taming_strategy,
+            balance=self.taming_balance,
+            verbose=False,
+        )
+        tamed = tamer.fit_transform(flows)
+        tamed_path = os.path.join(output_dir, f"tamed_{split}.csv")
+        tamer.to_csv(tamed, tamed_path)
+        config_path = os.path.join(output_dir, f"tamer_config_{split}.json")
+        tamer.save_config(config_path)
+        report_path = os.path.join(output_dir, f"taming_report_{split}.txt")
+        with open(report_path, "w") as f:
+            f.write(tamer.report_string())
+            f.write(tamer.feature_summary())
+        print(f"  [Data Tamer] ✓ {len(tamed):,} records → tamed_{split}.csv")
+        return tamed
 
     def _write_csv(self, flows: List[dict], path: str):
         """Write raw time-series CSV."""
